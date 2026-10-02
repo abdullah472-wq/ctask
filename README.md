@@ -1,6 +1,6 @@
-# findus_app
+# olpokaj
 
-A new Flutter project.
+Your micro-job marketplace.
 
 ## Getting Started
 
