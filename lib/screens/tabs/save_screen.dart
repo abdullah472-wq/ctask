@@ -2,9 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:findus_app/constants/app_colors.dart';
 import 'package:findus_app/screens/profile/unified_profile_screen.dart';
-import 'package:findus_app/screens/tabs/chat_screen.dart';
 import 'package:findus_app/services/saved_service.dart';
-import 'package:findus_app/services/firestore_chat_service.dart';
 import 'package:findus_app/widgets/universal_worker_card.dart';
 import 'package:findus_app/widgets/floating_scaffold.dart';
 
@@ -17,7 +15,14 @@ class SaveScreen extends StatefulWidget {
 
 class _SaveScreenState extends State<SaveScreen> {
   // ✅ ক্যাটাগরি লিস্ট
-  final List<String> _categories = ["All", "Farmer", "Painter", "Shopper", "Driver", "Others"];
+  final List<String> _categories = [
+    "All",
+    "Farmer",
+    "Painter",
+    "Shopper",
+    "Driver",
+    "Others",
+  ];
   String _selectedCategory = "All";
 
   // ✅ ফিল্টার লজিক
@@ -29,13 +34,26 @@ class _SaveScreenState extends State<SaveScreen> {
     return SavedService.savedWorkers.where((worker) {
       final role = (worker['role'] ?? '').toString().toUpperCase();
 
-      if (_selectedCategory == "Farmer") return role.contains("FARMER") || role.contains("GARDEN");
-      if (_selectedCategory == "Painter") return role.contains("PAINTER") || role.contains("COLOR");
-      if (_selectedCategory == "Shopper") return role.contains("SHOPPER") || role.contains("BAZAR");
-      if (_selectedCategory == "Driver") return role.contains("DRIVER") || role.contains("RIKSHAW");
+      if (_selectedCategory == "Farmer")
+        return role.contains("FARMER") || role.contains("GARDEN");
+      if (_selectedCategory == "Painter")
+        return role.contains("PAINTER") || role.contains("COLOR");
+      if (_selectedCategory == "Shopper")
+        return role.contains("SHOPPER") || role.contains("BAZAR");
+      if (_selectedCategory == "Driver")
+        return role.contains("DRIVER") || role.contains("RIKSHAW");
 
       // Others Logic
-      final mainRoles = ['FARMER', 'GARDEN', 'PAINTER', 'COLOR', 'SHOPPER', 'BAZAR', 'DRIVER', 'RIKSHAW'];
+      final mainRoles = [
+        'FARMER',
+        'GARDEN',
+        'PAINTER',
+        'COLOR',
+        'SHOPPER',
+        'BAZAR',
+        'DRIVER',
+        'RIKSHAW',
+      ];
       if (_selectedCategory == "Others") {
         return !mainRoles.any((r) => role.contains(r));
       }
@@ -72,13 +90,13 @@ class _SaveScreenState extends State<SaveScreen> {
             child: workers.isEmpty
                 ? _buildEmptyState(isDark)
                 : ListView.builder(
-              padding: const EdgeInsets.only(bottom: 100, top: 10),
-              physics: const BouncingScrollPhysics(),
-              itemCount: workers.length,
-              itemBuilder: (context, index) {
-                return _buildWorkerCard(workers[index]);
-              },
-            ),
+                    padding: const EdgeInsets.only(bottom: 100, top: 10),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: workers.length,
+                    itemBuilder: (context, index) {
+                      return _buildWorkerCard(workers[index]);
+                    },
+                  ),
           ),
         ],
       ),
@@ -108,10 +126,14 @@ class _SaveScreenState extends State<SaveScreen> {
               backgroundColor: isDark ? Colors.white10 : Colors.grey.shade200,
               selectedColor: AppColors.brandMain,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white70 : Colors.black87),
                 fontWeight: FontWeight.bold,
               ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               side: BorderSide.none,
             ),
           );
@@ -147,7 +169,6 @@ class _SaveScreenState extends State<SaveScreen> {
         // Actions
         onTap: () => _navigateToProfile(workerId),
         onViewProfileTap: () => _navigateToProfile(workerId),
-        onChatTap: () => _openChat(workerId, name, role, image),
 
         // ❤️ Save/Unsave Logic
         isSaved: true, // Saved Screen এ সব আইটেমই সেভড থাকে
@@ -174,16 +195,13 @@ class _SaveScreenState extends State<SaveScreen> {
 
   void _navigateToProfile(String uid) {
     if (uid.isEmpty) return;
-    Navigator.push(context, MaterialPageRoute(builder: (_) => UnifiedProfileScreen(uid: uid, isOwner: false, showBack: true)));
-  }
-
-  void _openChat(String uid, String name, String role, String image) async {
-    if (uid.isEmpty) return;
-    try {
-      final convId = await FirestoreChatService.getOrCreateConversation(otherUserId: uid);
-      if (!mounted) return;
-      Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(conversationId: convId, userName: name, userRole: role, userImage: image)));
-    } catch (_) {}
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            UnifiedProfileScreen(uid: uid, isOwner: false, showBack: true),
+      ),
+    );
   }
 
   Widget _buildEmptyState(bool isDark) {
@@ -191,11 +209,19 @@ class _SaveScreenState extends State<SaveScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.bookmark_border_rounded, size: 80, color: Colors.grey.withOpacity(0.3)),
+          Icon(
+            Icons.bookmark_border_rounded,
+            size: 80,
+            color: Colors.grey.withOpacity(0.3),
+          ),
           const SizedBox(height: 15),
           Text(
             "No saved profiles found",
-            style: TextStyle(color: isDark ? Colors.white54 : Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: isDark ? Colors.white54 : Colors.grey,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

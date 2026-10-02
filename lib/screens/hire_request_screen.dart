@@ -9,8 +9,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:findus_app/constants/app_colors.dart';
 import 'package:findus_app/models/worker_model.dart';
-import 'package:findus_app/screens/tabs/chat_screen.dart';
-import 'package:findus_app/services/firestore_chat_service.dart';
 import 'package:findus_app/services/notification_service.dart';
 import 'package:findus_app/widgets/floating_scaffold.dart';
 import 'package:findus_app/achievement/achievement_service.dart';
@@ -58,7 +56,10 @@ class _HireRequestScreenState extends State<HireRequestScreen> {
     }
 
     if (details.length < 10) {
-      _showSnackbar("Please provide more details (minimum 10 characters)", isError: true);
+      _showSnackbar(
+        "Please provide more details (minimum 10 characters)",
+        isError: true,
+      );
       return;
     }
 
@@ -132,10 +133,7 @@ class _HireRequestScreenState extends State<HireRequestScreen> {
       setState(() => _isLoading = false);
 
       // ✅ Show success with OTP
-      _showSuccessBottomSheet(
-        requestId: result.requestId,
-        otp: result.otp,
-      );
+      _showSuccessBottomSheet(requestId: result.requestId, otp: result.otp);
     } catch (e) {
       debugPrint('❌ Send request error: $e');
       if (!mounted) return;
@@ -365,9 +363,7 @@ class _HireRequestScreenState extends State<HireRequestScreen> {
               decoration: BoxDecoration(
                 color: AppColors.brandMain.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppColors.brandMain.withOpacity(0.3),
-                ),
+                border: Border.all(color: AppColors.brandMain.withOpacity(0.3)),
               ),
               child: Column(
                 children: [
@@ -471,35 +467,12 @@ class _HireRequestScreenState extends State<HireRequestScreen> {
 
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () async {
+                    onPressed: () {
                       Navigator.pop(sheetCtx);
-
-                      if (otherUid.isEmpty) return;
-
-                      try {
-                        final cid = await FirestoreChatService.getOrCreateConversation(
-                          otherUserId: otherUid,
-                        );
-
-                        if (rootNav.canPop()) rootNav.pop();
-
-                        if (!rootNav.context.mounted) return;
-                        rootNav.push(
-                          MaterialPageRoute(
-                            builder: (_) => ChatScreen(
-                              conversationId: cid,
-                              userName: worker.name,
-                              userRole: worker.userRole,
-                              userImage: worker.image,
-                            ),
-                          ),
-                        );
-                      } catch (e) {
-                        debugPrint("❌ Chat error: $e");
-                      }
+                      if (rootNav.canPop()) rootNav.pop();
                     },
-                    icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                    label: const Text('Chat Now'),
+                    icon: const Icon(Icons.done_all, size: 18),
+                    label: const Text('Done'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.brandMain,
                       foregroundColor: Colors.white,
@@ -664,9 +637,21 @@ class _HireRequestScreenState extends State<HireRequestScreen> {
               const SizedBox(height: 10),
               Row(
                 children: [
-                  _buildChip("Urgent (Now)", "Urgent", isDark, cardColor, textColor),
+                  _buildChip(
+                    "Urgent (Now)",
+                    "Urgent",
+                    isDark,
+                    cardColor,
+                    textColor,
+                  ),
                   const SizedBox(width: 15),
-                  _buildChip("Schedule Later", "Scheduled", isDark, cardColor, textColor),
+                  _buildChip(
+                    "Schedule Later",
+                    "Scheduled",
+                    isDark,
+                    cardColor,
+                    textColor,
+                  ),
                 ],
               ),
 
@@ -698,7 +683,9 @@ class _HireRequestScreenState extends State<HireRequestScreen> {
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: AppColors.brandMain,
-                  inactiveTrackColor: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                  inactiveTrackColor: isDark
+                      ? Colors.grey.shade700
+                      : Colors.grey.shade300,
                   thumbColor: AppColors.brandDark,
                   overlayColor: AppColors.brandMain.withOpacity(0.2),
                   trackHeight: 6.0,
@@ -744,27 +731,27 @@ class _HireRequestScreenState extends State<HireRequestScreen> {
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 3,
-                    ),
-                  )
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
+                        )
                       : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Send Request",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Send Request",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Icon(Icons.send_rounded, size: 20),
+                          ],
                         ),
-                      ),
-                      SizedBox(width: 10),
-                      Icon(Icons.send_rounded, size: 20),
-                    ],
-                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -789,7 +776,7 @@ class _HireRequestScreenState extends State<HireRequestScreen> {
             color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -856,12 +843,12 @@ class _HireRequestScreenState extends State<HireRequestScreen> {
   }
 
   Widget _buildChip(
-      String label,
-      String value,
-      bool isDark,
-      Color cardColor,
-      Color textColor,
-      ) {
+    String label,
+    String value,
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+  ) {
     final isSelected = _selectedWorkType == value;
     return Expanded(
       child: GestureDetector(
@@ -880,12 +867,12 @@ class _HireRequestScreenState extends State<HireRequestScreen> {
             ),
             boxShadow: isSelected
                 ? [
-              BoxShadow(
-                color: AppColors.brandMain.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              )
-            ]
+                    BoxShadow(
+                      color: AppColors.brandMain.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
                 : [],
           ),
           child: Center(
@@ -910,8 +897,5 @@ class _RequestResult {
   final String requestId;
   final String otp;
 
-  _RequestResult({
-    required this.requestId,
-    required this.otp,
-  });
+  _RequestResult({required this.requestId, required this.otp});
 }

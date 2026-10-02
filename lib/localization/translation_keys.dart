@@ -3,7 +3,6 @@
 /// Central repository for all translation keys used in the app
 /// This prevents typos and makes refactoring easier
 class TranslationKeys {
-
   // ════════════════════════════════════════════════════════════════════════════
   // APP GENERAL
   // ════════════════════════════════════════════════════════════════════════════
@@ -216,40 +215,6 @@ class TranslationKeys {
   static const String maximumAmount = 'maximum_amount';
 
   // ════════════════════════════════════════════════════════════════════════════
-  // CHAT & MESSAGING
-  // ════════════════════════════════════════════════════════════════════════════
-
-  static const String chat = 'chat';
-  static const String chats = 'chats';
-  static const String messages = 'messages';
-  static const String newMessage = 'new_message';
-  static const String typeMessage = 'type_message';
-  static const String sendMessage = 'send_message';
-  static const String noMessages = 'no_messages';
-  static const String conversation = 'conversation';
-  static const String online = 'online';
-  static const String offline = 'offline';
-  static const String typing = 'typing';
-  static const String lastSeen = 'last_seen';
-  static const String seen = 'seen';
-  static const String delivered = 'delivered';
-  static const String sent = 'sent';
-  static const String deleteMessage = 'delete_message';
-  static const String deleteChat = 'delete_chat';
-  static const String blockUser = 'block_user';
-  static const String unblockUser = 'unblock_user';
-  static const String muteNotifications = 'mute_notifications';
-  static const String unmuteNotifications = 'unmute_notifications';
-  static const String archiveChat = 'archive_chat';
-  static const String unarchiveChat = 'unarchive_chat';
-  static const String pinChat = 'pin_chat';
-  static const String unpinChat = 'unpin_chat';
-  static const String starredMessages = 'starred_messages';
-  static const String archivedChats = 'archived_chats';
-  static const String pinnedChats = 'pinned_chats';
-  static const String messageRequests = 'message_requests';
-
-  // ════════════════════════════════════════════════════════════════════════════
   // NOTIFICATIONS
   // ════════════════════════════════════════════════════════════════════════════
 
@@ -292,7 +257,8 @@ class TranslationKeys {
   static const String accountSettings = 'account_settings';
   static const String privacySettings = 'privacy_settings';
   static const String securitySettings = 'security_settings';
-  static const String notificationControlSettings = 'notification_control_settings';
+  static const String notificationControlSettings =
+      'notification_control_settings';
   static const String languageSettings = 'language_settings';
   static const String changeLanguage = 'change_language';
   static const String selectLanguage = 'select_language';
@@ -332,22 +298,6 @@ class TranslationKeys {
   static const String verificationApproved = 'verification_approved';
   static const String verificationRejected = 'verification_rejected';
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // AD CENTER & PROMOTION
-  // ════════════════════════════════════════════════════════════════════════════
-
-  static const String adCenter = 'ad_center';
-  static const String promote = 'promote';
-  static const String boostProfile = 'boost_profile';
-  static const String boostJob = 'boost_job';
-  static const String instantBoost = 'instant_boost';
-  static const String promotionActive = 'promotion_active';
-  static const String promotionExpired = 'promotion_expired';
-  static const String selectDuration = 'select_duration';
-  static const String selectBudget = 'select_budget';
-  static const String dailyBudget = 'daily_budget';
-  static const String totalBudget = 'total_budget';
-  static const String estimatedReach = 'estimated_reach';
   static const String analytics = 'analytics';
   static const String views = 'views';
   static const String clicks = 'clicks';
@@ -399,7 +349,8 @@ class TranslationKeys {
   static const String validationMaxLength = 'validation_max_length';
   static const String validationInvalidEmail = 'validation_invalid_email';
   static const String validationInvalidPhone = 'validation_invalid_phone';
-  static const String validationPasswordMismatch = 'validation_password_mismatch';
+  static const String validationPasswordMismatch =
+      'validation_password_mismatch';
   static const String validationWeakPassword = 'validation_weak_password';
   static const String validationInvalidUrl = 'validation_invalid_url';
   static const String validationInvalidNumber = 'validation_invalid_number';

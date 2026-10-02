@@ -13,7 +13,7 @@ import 'package:findus_app/screens/dashboard/widgets/work_summary_section.dart';
 import 'package:findus_app/screens/dashboard/widgets/posted_pins_list.dart';
 
 // Screens
-import 'package:findus_app/screens/ad_center/analytics_screen.dart';
+import 'package:findus_app/screens/analytics_screen.dart';
 import 'package:findus_app/screens/dashboard/my_applications_screen.dart';
 import 'package:findus_app/screens/team/team_invitations_screen.dart'; // ✅ NEW
 import 'package:findus_app/screens/team/team_management_screen.dart'; // ✅ NEW
@@ -131,10 +131,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         elevation: 0,
         title: Text(
           'Dashboard',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
         actions: [
           // ✅ Team Management (for Supporters/Business Owners)
@@ -156,9 +153,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const AnalyticsScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
               );
             },
           ),
@@ -182,9 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 decoration: BoxDecoration(
                   color: Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.orange.withOpacity(0.3),
-                  ),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
                 ),
                 child: Row(
                   children: [
@@ -215,10 +208,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 16),
 
             // ✅ 1) Performance Card
-            PerformanceCard(
-              userId: _uid,
-              userRole: _userRole!,
-            ),
+            PerformanceCard(userId: _uid, userRole: _userRole!),
 
             const SizedBox(height: 20),
 
@@ -239,10 +229,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 20),
 
             // ✅ 4) Work Summary
-            WorkSummarySection(
-              userId: _uid,
-              userRole: _userRole!,
-            ),
+            WorkSummarySection(userId: _uid, userRole: _userRole!),
 
             const SizedBox(height: 25),
 
@@ -281,7 +268,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // ✅ Quick Actions Row - Updated
-  Widget _buildQuickActionsRow(BuildContext context, bool isDark, bool isFinder, bool isSupporter) {
+  Widget _buildQuickActionsRow(
+    BuildContext context,
+    bool isDark,
+    bool isFinder,
+    bool isSupporter,
+  ) {
     final cardColor = isDark ? const Color(0xFF2C2C2C) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black87;
 
@@ -342,9 +334,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const AnalyticsScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
               );
             },
           ),
@@ -454,7 +444,9 @@ class _TeamInvitationsCard extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: Text(
-                              invitations.length > 9 ? '9+' : '${invitations.length}',
+                              invitations.length > 9
+                                  ? '9+'
+                                  : '${invitations.length}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
@@ -527,10 +519,7 @@ class _MyTeamsCard extends StatelessWidget {
   final String userId;
   final bool isDark;
 
-  const _MyTeamsCard({
-    required this.userId,
-    required this.isDark,
-  });
+  const _MyTeamsCard({required this.userId, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -596,10 +585,7 @@ class _MyTeamsCard extends StatelessWidget {
                         ),
                         Text(
                           "You're part of ${teams.length} team${teams.length > 1 ? 's' : ''}",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: subColor,
-                          ),
+                          style: TextStyle(fontSize: 12, color: subColor),
                         ),
                       ],
                     ),
@@ -630,19 +616,25 @@ class _MyTeamsCard extends StatelessWidget {
                         backgroundColor: isManager
                             ? Colors.orange.withOpacity(0.1)
                             : Colors.blue.withOpacity(0.1),
-                        backgroundImage: data['ownerImage'] != null &&
-                            data['ownerImage'].toString().isNotEmpty
+                        backgroundImage:
+                            data['ownerImage'] != null &&
+                                data['ownerImage'].toString().isNotEmpty
                             ? NetworkImage(data['ownerImage'])
                             : null,
-                        child: data['ownerImage'] == null ||
-                            data['ownerImage'].toString().isEmpty
+                        child:
+                            data['ownerImage'] == null ||
+                                data['ownerImage'].toString().isEmpty
                             ? Text(
-                          ownerName.isNotEmpty ? ownerName[0].toUpperCase() : '?',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isManager ? Colors.orange : Colors.blue,
-                          ),
-                        )
+                                ownerName.isNotEmpty
+                                    ? ownerName[0].toUpperCase()
+                                    : '?',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: isManager
+                                      ? Colors.orange
+                                      : Colors.blue,
+                                ),
+                              )
                             : null,
                       ),
                       const SizedBox(width: 12),
@@ -675,18 +667,16 @@ class _MyTeamsCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: isManager ? Colors.orange : Colors.blue,
+                                  color: isManager
+                                      ? Colors.orange
+                                      : Colors.blue,
                                 ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Icon(
-                        Icons.chevron_right,
-                        color: subColor,
-                        size: 20,
-                      ),
+                      Icon(Icons.chevron_right, color: subColor, size: 20),
                     ],
                   ),
                 );
@@ -698,7 +688,9 @@ class _MyTeamsCard extends StatelessWidget {
                   onPressed: () {
                     // Navigate to all teams screen
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("View all teams coming soon!")),
+                      const SnackBar(
+                        content: Text("View all teams coming soon!"),
+                      ),
                     );
                   },
                   child: Text(
@@ -734,7 +726,6 @@ class _QuickActionButton extends StatelessWidget {
     required this.cardColor,
     required this.textColor,
     required this.onTap,
-    this.badge,
   });
 
   @override
@@ -817,10 +808,7 @@ class _MyApplicationsCard extends StatelessWidget {
   final String userId;
   final bool isDark;
 
-  const _MyApplicationsCard({
-    required this.userId,
-    required this.isDark,
-  });
+  const _MyApplicationsCard({required this.userId, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -913,20 +901,13 @@ class _MyApplicationsCard extends StatelessWidget {
                             ),
                             Text(
                               "$total total applications",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: subColor,
-                              ),
+                              style: TextStyle(fontSize: 12, color: subColor),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: subColor,
-                    ),
+                    Icon(Icons.arrow_forward_ios, size: 16, color: subColor),
                   ],
                 ),
 
@@ -991,9 +972,7 @@ class _StatusChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: color.withOpacity(0.2),
-          ),
+          border: Border.all(color: color.withOpacity(0.2)),
         ),
         child: Column(
           children: [

@@ -94,13 +94,10 @@ class _ActivationScreenState extends State<ActivationScreen>
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (context) => UnifiedProfileScreen(
-          uid: _uid,
-          isOwner: true,
-          showBack: true,
-        ),
+        builder: (context) =>
+            UnifiedProfileScreen(uid: _uid, isOwner: true, showBack: true),
       ),
-          (route) => false,
+      (route) => false,
     );
   }
 
@@ -160,7 +157,10 @@ class _ActivationScreenState extends State<ActivationScreen>
       titleColor: textColor,
       iconColor: textColor,
       body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance.collection('users').doc(_uid).snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(_uid)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return _buildErrorState(isDark, cardColor, textColor);
@@ -211,7 +211,13 @@ class _ActivationScreenState extends State<ActivationScreen>
                   const SizedBox(height: 25),
 
                   // Info Card
-                  _buildInfoCard(isApproved, isRejected, isDark, cardColor, textColor),
+                  _buildInfoCard(
+                    isApproved,
+                    isRejected,
+                    isDark,
+                    cardColor,
+                    textColor,
+                  ),
 
                   const SizedBox(height: 20),
 
@@ -365,12 +371,12 @@ class _ActivationScreenState extends State<ActivationScreen>
                   shape: BoxShape.circle,
                   boxShadow: isActive
                       ? [
-                    BoxShadow(
-                      color: AppColors.brandMain.withOpacity(0.4),
-                      blurRadius: 12,
-                      spreadRadius: 2,
-                    )
-                  ]
+                          BoxShadow(
+                            color: AppColors.brandMain.withOpacity(0.4),
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          ),
+                        ]
                       : [],
                 ),
                 child: Icon(icon, color: iconColor, size: 18),
@@ -383,12 +389,14 @@ class _ActivationScreenState extends State<ActivationScreen>
           label,
           style: TextStyle(
             fontSize: 10,
-            fontWeight: isActive || isCompleted ? FontWeight.bold : FontWeight.normal,
+            fontWeight: isActive || isCompleted
+                ? FontWeight.bold
+                : FontWeight.normal,
             color: isError
                 ? Colors.red
                 : (isActive
-                ? AppColors.brandMain
-                : (isDark ? Colors.grey : Colors.grey[600])),
+                      ? AppColors.brandMain
+                      : (isDark ? Colors.grey : Colors.grey[600])),
           ),
         ),
       ],
@@ -464,7 +472,12 @@ class _ActivationScreenState extends State<ActivationScreen>
   // STATUS TEXT
   // ════════════════════════════════════════════════════════════════════════════
 
-  Widget _buildStatusText(bool isApproved, bool isRejected, bool isDark, Color textColor) {
+  Widget _buildStatusText(
+    bool isApproved,
+    bool isRejected,
+    bool isDark,
+    Color textColor,
+  ) {
     String title;
     String subtitle;
     Color titleColor;
@@ -475,7 +488,8 @@ class _ActivationScreenState extends State<ActivationScreen>
       titleColor = Colors.green;
     } else if (isRejected) {
       title = "Verification Failed ❌";
-      subtitle = "We couldn't verify your TrxID. Please contact support or try again.";
+      subtitle =
+          "We couldn't verify your TrxID. Please contact support or try again.";
       titleColor = Colors.red;
     } else {
       title = "Verification Pending ⏳";
@@ -512,12 +526,12 @@ class _ActivationScreenState extends State<ActivationScreen>
   // ════════════════════════════════════════════════════════════════════════════
 
   Widget _buildInfoCard(
-      bool isApproved,
-      bool isRejected,
-      bool isDark,
-      Color cardColor,
-      Color textColor,
-      ) {
+    bool isApproved,
+    bool isRejected,
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+  ) {
     Color borderColor;
     if (isApproved) {
       borderColor = Colors.green.withOpacity(0.3);
@@ -626,10 +640,7 @@ class _ActivationScreenState extends State<ActivationScreen>
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 11),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -672,9 +683,7 @@ class _ActivationScreenState extends State<ActivationScreen>
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? Colors.white10 : Colors.grey[200]!,
-        ),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -698,7 +707,10 @@ class _ActivationScreenState extends State<ActivationScreen>
             TextButton(
               onPressed: _contactSupport,
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 minimumSize: Size.zero,
               ),
               child: const Text(
@@ -760,9 +772,7 @@ class _ActivationScreenState extends State<ActivationScreen>
           onPressed: _contactSupport,
           icon: const Icon(Icons.support_agent, size: 18),
           label: const Text("Need Help? Contact Support"),
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.brandMain,
-          ),
+          style: TextButton.styleFrom(foregroundColor: AppColors.brandMain),
         ),
       ],
     );
@@ -965,7 +975,7 @@ class _ContactSupportSheet extends StatelessWidget {
                 color: Colors.green.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.chat, color: Colors.green),
+              child: const Icon(Icons.support_agent, color: Colors.green),
             ),
             title: const Text("WhatsApp"),
             subtitle: const Text("+880 1700-000000"),

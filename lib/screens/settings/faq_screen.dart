@@ -65,14 +65,14 @@ class _FaqScreenState extends State<FaqScreen> {
                 child: filteredFaqs.isEmpty
                     ? _buildEmptyState(colors)
                     : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: filteredFaqs.length,
-                  itemBuilder: (context, index) {
-                    final faq = filteredFaqs[index];
-                    return _buildFaqItem(faq, colors, index);
-                  },
-                ),
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: filteredFaqs.length,
+                        itemBuilder: (context, index) {
+                          final faq = filteredFaqs[index];
+                          return _buildFaqItem(faq, colors, index);
+                        },
+                      ),
               ),
             ],
           ),
@@ -113,14 +113,14 @@ class _FaqScreenState extends State<FaqScreen> {
           prefixIcon: Icon(Icons.search, color: colors.subTextColor),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-            icon: Icon(Icons.clear, color: colors.subTextColor),
-            onPressed: () {
-              _searchController.clear();
-              setState(() {
-                _searchQuery = '';
-              });
-            },
-          )
+                  icon: Icon(Icons.clear, color: colors.subTextColor),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = '';
+                    });
+                  },
+                )
               : null,
           filled: true,
           fillColor: colors.isDark ? Colors.white10 : Colors.grey.shade100,
@@ -170,12 +170,12 @@ class _FaqScreenState extends State<FaqScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: isSelected
                     ? [
-                  BoxShadow(
-                    color: AppColors.brandMain.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
+                        BoxShadow(
+                          color: AppColors.brandMain.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
                     : null,
               ),
               child: Center(
@@ -183,8 +183,9 @@ class _FaqScreenState extends State<FaqScreen> {
                   category,
                   style: TextStyle(
                     color: isSelected ? Colors.white : colors.textColor,
-                    fontWeight:
-                    isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     fontSize: 13,
                   ),
                 ),
@@ -217,9 +218,7 @@ class _FaqScreenState extends State<FaqScreen> {
         ],
       ),
       child: Theme(
-        data: Theme.of(context).copyWith(
-          dividerColor: Colors.transparent,
-        ),
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -229,11 +228,7 @@ class _FaqScreenState extends State<FaqScreen> {
               color: faq.categoryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              faq.icon,
-              color: faq.categoryColor,
-              size: 20,
-            ),
+            child: Icon(faq.icon, color: faq.categoryColor, size: 20),
           ),
           title: Text(
             faq.question,
@@ -245,31 +240,31 @@ class _FaqScreenState extends State<FaqScreen> {
           ),
           subtitle: faq.tags.isNotEmpty
               ? Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Wrap(
-              spacing: 4,
-              children: faq.tags.map((tag) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Wrap(
+                    spacing: 4,
+                    children: faq.tags.map((tag) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: faq.categoryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          tag,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: faq.categoryColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                  decoration: BoxDecoration(
-                    color: faq.categoryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    tag,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: faq.categoryColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          )
+                )
               : null,
           iconColor: AppColors.brandMain,
           collapsedIconColor: colors.subTextColor,
@@ -349,10 +344,7 @@ class _FaqScreenState extends State<FaqScreen> {
               children: [
                 Text(
                   'Was this helpful?',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colors.subTextColor,
-                  ),
+                  style: TextStyle(fontSize: 12, color: colors.subTextColor),
                 ),
                 const SizedBox(width: 12),
                 IconButton(
@@ -409,10 +401,7 @@ class _FaqScreenState extends State<FaqScreen> {
               _searchQuery.isNotEmpty
                   ? 'Try searching with different keywords'
                   : 'No FAQs available in this category',
-              style: TextStyle(
-                fontSize: 14,
-                color: colors.subTextColor,
-              ),
+              style: TextStyle(fontSize: 14, color: colors.subTextColor),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -482,9 +471,7 @@ class _FaqScreenState extends State<FaqScreen> {
         ),
         backgroundColor: isHelpful ? Colors.green : Colors.orange,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -500,7 +487,7 @@ class _FaqScreenState extends State<FaqScreen> {
       category: 'General',
       question: 'How does FINDUS work?',
       answer:
-      'FINDUS connects Job Makers (supporters) and Job Finders (workers) in a hyper-local way. You can post a request or offer your service and chat directly.',
+          'FINDUS connects Job Makers (supporters) and Job Finders (workers) in a hyper-local way. You can post a request or offer your service.',
       icon: Icons.help_outline,
       categoryColor: Colors.blue,
       tags: ['basics', 'getting started'],
@@ -511,7 +498,7 @@ class _FaqScreenState extends State<FaqScreen> {
       category: 'General',
       question: 'How do I report a problem?',
       answer:
-      'You can report from Help Center > Email Support, or contact our support team via chat with details of your issue.',
+          'You can report from Help Center > Email Support, or contact our support team by email with details of your issue.',
       icon: Icons.report_problem_outlined,
       categoryColor: Colors.blue,
       tags: ['support', 'help'],
@@ -523,7 +510,7 @@ class _FaqScreenState extends State<FaqScreen> {
       category: 'Verification',
       question: 'How do I get a verified badge?',
       answer:
-      'You need to complete KYC verification from the Settings > Verification section. Once approved, a blue verified badge will appear on your profile.',
+          'You need to complete KYC verification from the Settings > Verification section. Once approved, a blue verified badge will appear on your profile.',
       icon: Icons.verified_user,
       categoryColor: Colors.green,
       tags: ['kyc', 'verification', 'badge'],
@@ -534,7 +521,7 @@ class _FaqScreenState extends State<FaqScreen> {
       category: 'Verification',
       question: "'Verified' ব্যাজ কীভাবে পাবো?",
       answer:
-      'Verified ব্যাজ পাওয়ার জন্য আপনাকে Settings > Verification থেকে KYC ভেরিফিকেশন সম্পূর্ণ করতে হবে। NID/Passport ও প্রয়োজন হলে সেলফি/লাইভ ফেস ভেরিফিকেশন জমা দিলে এবং আমাদের টিম অ্যাপ্রুভ করলে আপনার প্রোফাইলে Verified ব্যাজ দেখা যাবে।',
+          'Verified ব্যাজ পাওয়ার জন্য আপনাকে Settings > Verification থেকে KYC ভেরিফিকেশন সম্পূর্ণ করতে হবে। NID/Passport ও প্রয়োজন হলে সেলফি/লাইভ ফেস ভেরিফিকেশন জমা দিলে এবং আমাদের টিম অ্যাপ্রুভ করলে আপনার প্রোফাইলে Verified ব্যাজ দেখা যাবে।',
       icon: Icons.verified,
       categoryColor: Colors.green,
       tags: ['verification', 'kyc', 'বাংলা'],
@@ -545,7 +532,7 @@ class _FaqScreenState extends State<FaqScreen> {
       category: 'Payment',
       question: 'How is payment handled?',
       answer:
-      'Currently payment is managed offline between worker and supporter. In future, in-app wallet and secure payment will be available.',
+          'Currently payment is managed offline between worker and supporter. In future, in-app wallet and secure payment will be available.',
       icon: Icons.payment,
       categoryColor: Colors.orange,
       tags: ['payment', 'wallet', 'transaction'],
@@ -557,7 +544,7 @@ class _FaqScreenState extends State<FaqScreen> {
       category: 'Badges',
       question: 'FINDUS‑এ ব্যাজ (Badge) আর স্ট্যাটাস (Status) কী?',
       answer:
-      'FINDUS‑এ ব্যাজ ও স্ট্যাটাস হলো আপনার প্রোফাইলের বিশ্বাসযোগ্যতা (trust), গুণগত মান (quality) এবং অ্যাক্টিভিটি (activity) দেখানোর ভিজ্যুয়াল প্রমাণ।',
+          'FINDUS‑এ ব্যাজ ও স্ট্যাটাস হলো আপনার প্রোফাইলের বিশ্বাসযোগ্যতা (trust), গুণগত মান (quality) এবং অ্যাক্টিভিটি (activity) দেখানোর ভিজ্যুয়াল প্রমাণ।',
       icon: Icons.stars,
       categoryColor: Colors.purple,
       tags: ['badge', 'status', 'বাংলা'],
@@ -567,7 +554,7 @@ class _FaqScreenState extends State<FaqScreen> {
       category: 'Badges',
       question: "'Top Rated' স্ট্যাটাস কী? এটা কীভাবে পাবো?",
       answer:
-      'Top Rated স্ট্যাটাস পাচ্ছেন সেই সব ইউজার, যাদের প্রোফাইলে ৫‑স্টার রেটিং থাকে। যখন আপনার গড় বা সাম্প্রতিক রেটিং ৫ স্টার থাকবে, তখনই Top Rated আইকন হাইলাইটেড হবে।',
+          'Top Rated স্ট্যাটাস পাচ্ছেন সেই সব ইউজার, যাদের প্রোফাইলে ৫‑স্টার রেটিং থাকে। যখন আপনার গড় বা সাম্প্রতিক রেটিং ৫ স্টার থাকবে, তখনই Top Rated আইকন হাইলাইটেড হবে।',
       icon: Icons.star,
       categoryColor: Colors.purple,
       tags: ['top rated', 'rating', 'বাংলা'],
@@ -577,7 +564,7 @@ class _FaqScreenState extends State<FaqScreen> {
       category: 'Badges',
       question: "'Trusted' ব্যাজ কারা পায়?",
       answer:
-      'Trusted ব্যাজ দেয়া হয় সেই ইউজারদের, যারা নিয়মিত সময়মতো পেমেন্ট করেন এবং অ্যাপের ভেতর অন‑টাইম পেমেন্ট হিস্ট্রি ভালো রাখেন।',
+          'Trusted ব্যাজ দেয়া হয় সেই ইউজারদের, যারা নিয়মিত সময়মতো পেমেন্ট করেন এবং অ্যাপের ভেতর অন‑টাইম পেমেন্ট হিস্ট্রি ভালো রাখেন।',
       icon: Icons.verified_outlined,
       categoryColor: Colors.purple,
       tags: ['trusted', 'payment', 'বাংলা'],
@@ -586,9 +573,9 @@ class _FaqScreenState extends State<FaqScreen> {
     _FaqItem(
       category: 'Badges',
       question:
-      'Bronze / Silver / Gold / Platinum / Diamond ব্যাজগুলো কীভাবে কাজ করে?',
+          'Bronze / Silver / Gold / Platinum / Diamond ব্যাজগুলো কীভাবে কাজ করে?',
       answer:
-      'এই ব্যাজগুলো আপনার লং‑টার্ম প্রগ্রেস দেখায়। বিভিন্ন টাস্ক ও অ্যাক্টিভিটি (জব কমপ্লিট করা, রিভিউ দেওয়া, ট্রানজ্যাকশন ইত্যাদি) করলে আপনি পয়েন্ট আর্ন করবেন। জমা হওয়া পয়েন্ট অনুযায়ী আপনার ব্যাজ আপগ্রেড হবে।',
+          'এই ব্যাজগুলো আপনার লং‑টার্ম প্রগ্রেস দেখায়। বিভিন্ন টাস্ক ও অ্যাক্টিভিটি (জব কমপ্লিট করা, রিভিউ দেওয়া, ট্রানজ্যাকশন ইত্যাদি) করলে আপনি পয়েন্ট আর্ন করবেন। জমা হওয়া পয়েন্ট অনুযায়ী আপনার ব্যাজ আপগ্রেড হবে।',
       icon: Icons.military_tech,
       categoryColor: Colors.purple,
       tags: ['badge levels', 'progress', 'বাংলা'],
@@ -598,7 +585,7 @@ class _FaqScreenState extends State<FaqScreen> {
       category: 'Badges',
       question: 'অন্য সব ব্যাজ কীভাবে আনলক হবে?',
       answer:
-      'Top Rated / Trusted / Verified ছাড়া অন্য ব্যাজগুলো মূলত টাস্ক ও পয়েন্ট সিস্টেমের মাধ্যমে আনলক হবে। নির্দিষ্ট টাস্ক পূর্ণ করলে নতুন অ্যাচিভমেন্ট ও ব্যাজ আনলক হবে।',
+          'Top Rated / Trusted / Verified ছাড়া অন্য ব্যাজগুলো মূলত টাস্ক ও পয়েন্ট সিস্টেমের মাধ্যমে আনলক হবে। নির্দিষ্ট টাস্ক পূর্ণ করলে নতুন অ্যাচিভমেন্ট ও ব্যাজ আনলক হবে।',
       icon: Icons.lock_open,
       categoryColor: Colors.purple,
       tags: ['unlock', 'achievements', 'বাংলা'],
@@ -608,7 +595,7 @@ class _FaqScreenState extends State<FaqScreen> {
       category: 'Badges',
       question: 'আমার ব্যাজ/স্ট্যাটাস কি অটো আপডেট হবে?',
       answer:
-      'হ্যাঁ। আপনার নতুন রেটিং, পেমেন্ট হিস্ট্রি, KYC স্ট্যাটাস বা টাস্ক/পয়েন্ট আপডেট হওয়ার সাথে সাথে FINDUS স্বয়ংক্রিয়ভাবে ব্যাজ ও স্ট্যাটাস আপডেট করে।',
+          'হ্যাঁ। আপনার নতুন রেটিং, পেমেন্ট হিস্ট্রি, KYC স্ট্যাটাস বা টাস্ক/পয়েন্ট আপডেট হওয়ার সাথে সাথে FINDUS স্বয়ংক্রিয়ভাবে ব্যাজ ও স্ট্যাটাস আপডেট করে।',
       icon: Icons.autorenew,
       categoryColor: Colors.purple,
       tags: ['auto update', 'বাংলা'],
@@ -640,7 +627,8 @@ class _FaqColors {
   }
 
   Color get textColor => isDark ? Colors.white : Colors.black87;
-  Color get subTextColor => isDark ? Colors.grey.shade400 : Colors.grey.shade600;
+  Color get subTextColor =>
+      isDark ? Colors.grey.shade400 : Colors.grey.shade600;
   Color get titleColor => isDark ? Colors.white : AppColors.brandDark;
   Color get iconColor => isDark ? Colors.white : AppColors.brandDark;
 }

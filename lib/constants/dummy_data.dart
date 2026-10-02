@@ -1,37 +1,6 @@
-import 'package:flutter/material.dart'; // এই লাইনটি 'Colors' এরর সমাধান করবে
 import 'package:latlong2/latlong.dart'; // ম্যাপের লোকেশনের জন্য
 
 class DummyData {
-
-  // চ্যাট লিস্ট
-  static List<Map<String, dynamic>> chatList = [
-    {
-      "id": "101", // আইডি যোগ করা হলো যাতে প্রোফাইলে লিঙ্ক করা যায়
-      "name": "Taohid Molla",
-      "role": "SUPPORTER",
-      "roleColor": Colors.redAccent, // এখন আর এরর দিবে না
-      "message": "ভাই কেমন আছেন?",
-      "time": "10:30 AM",
-      "imgUrl": "https://i.pravatar.cc/150?img=11",
-      "isVerified": true,
-      "isOnline": true,
-      "isUnread": true
-    },
-    {
-      "id": "102",
-      "name": "Tasfia",
-      "role": "TEACHER",
-      "roleColor": Colors.pinkAccent,
-      "message": "Ami porate parbo",
-      "time": "9:15 AM",
-      "imgUrl": "https://i.pravatar.cc/150?img=5",
-      "isVerified": true,
-      "isOnline": false,
-      "isUnread": false
-    },
-    // ... বাকি ডাটা এখানে যোগ করতে পারেন
-  ];
-
   // ওয়ার্কার লিস্ট
   static final List<Map<String, dynamic>> baseWorkers = [
     {
@@ -46,7 +15,7 @@ class DummyData {
       "isLive": true,
       "phone": "01700000000",
       "gender": "Male",
-      "experience": 5
+      "experience": 5,
     },
     {
       "id": "2",
@@ -60,7 +29,7 @@ class DummyData {
       "isLive": false,
       "phone": "01800000000",
       "gender": "Female",
-      "experience": 2
+      "experience": 2,
     },
     {
       "id": "3",
@@ -74,13 +43,18 @@ class DummyData {
       "isLive": false,
       "phone": "123456",
       "gender": "Male",
-      "experience": 8
+      "experience": 8,
     },
   ];
 
   // কিছু ডামি নোটিফিকেশন
   static List<Map<String, dynamic>> notifications = [
-    {"id": 1, "title": "Mithila accepted request", "time": "2m ago", "read": false},
+    {
+      "id": 1,
+      "title": "Mithila accepted request",
+      "time": "2m ago",
+      "read": false,
+    },
     {"id": 2, "title": "New gardener nearby", "time": "1h ago", "read": false},
     {"id": 3, "title": "Payment success", "time": "4pm", "read": true},
   ];

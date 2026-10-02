@@ -1,18 +1,12 @@
 // lib/screens/explore/explore_screen.dart
 
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart' hide Path;
-import 'package:lottie/lottie.dart' hide Marker;
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:http/http.dart' as http;
 
 // Constants & Services
 import '../../../constants/app_colors.dart';
@@ -30,8 +24,8 @@ import 'package:findus_app/screens/explore/models/filter_bottom_sheet.dart';
 // Screens
 import 'package:findus_app/screens/profile/earn_post_screen.dart';
 import 'package:findus_app/screens/profile/support_post_screen.dart';
-import 'package:findus_app/screens/explore/responsive_worker_pin.dart';
 import 'package:findus_app/screens/explore/notifications_page.dart';
+import 'package:findus_app/widgets/universal_worker_card.dart';
 import '../auth/login_screen.dart';
 import '../emergency_screen.dart';
 import 'profile_sidebar_menu.dart';
@@ -52,21 +46,8 @@ class _ExploreScreenState extends State<ExploreScreen>
   // CONTROLLERS & KEYS
   // ═══════════════════════════════════════════════════════════
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  late final MapController _mapController;
-  final TextEditingController _locationSearchController = TextEditingController();
   final TextEditingController _mainSearchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-
-  // ═══════════════════════════════════════════════════════════
-  // LOCATION STATE
-  // ═══════════════════════════════════════════════════════════
-  LatLng? _userCurrentLocation;
-  final LatLng _dhakaLocation = const LatLng(23.8103, 90.4125);
-  final Distance _distance = const Distance();
-  static bool _hasInitialZoomHappened = false;
-  double _currentZoom = 2.5;
-  double _currentRotation = 0.0;
-  bool _isSearchingLocation = true;
 
   // ═══════════════════════════════════════════════════════════
   // SEARCH STATE
@@ -128,7 +109,6 @@ class _ExploreScreenState extends State<ExploreScreen>
   @override
   void initState() {
     super.initState();
-    _mapController = MapController();
 
     _initSearchListeners();
     _loadRecentSearches();
@@ -136,16 +116,6 @@ class _ExploreScreenState extends State<ExploreScreen>
     _loadBlockedUsers();
     _handleWelcomeLogic();
     _listenToNotifications();
-    _updateMapQuest();
-
-    _isSearchingLocation = true;
-
-    if (!_hasInitialZoomHappened) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _startInitialZoomSequence());
-    } else {
-      _isSearchingLocation = false;
-      _checkLocationOnly();
-    }
   }
 
   void _initSearchListeners() {
@@ -169,7 +139,6 @@ class _ExploreScreenState extends State<ExploreScreen>
 
   @override
   void dispose() {
-    _locationSearchController.dispose();
     _mainSearchController.dispose();
     _searchFocusNode.dispose();
     _postsSub?.cancel();
@@ -201,11 +170,6 @@ class _ExploreScreenState extends State<ExploreScreen>
     }
   }
 
-  Future<void> _updateMapQuest() async {
-    await AchievementService.incrementProgress('daily_explore');
-    await AchievementService.syncWeeklyChestFromServer();
-  }
-
   // ═══════════════════════════════════════════════════════════
   // NOTIFICATIONS
   // ═══════════════════════════════════════════════════════════
@@ -221,17 +185,20 @@ class _ExploreScreenState extends State<ExploreScreen>
         .where('read', isEqualTo: false)
         .snapshots()
         .listen((q) {
-      if (mounted) {
-        setState(() {
-          _unreadNotifCount = q.docs.length;
-          _hasUnreadNotifs = q.docs.isNotEmpty;
+          if (mounted) {
+            setState(() {
+              _unreadNotifCount = q.docs.length;
+              _hasUnreadNotifs = q.docs.isNotEmpty;
+            });
+          }
         });
-      }
-    });
   }
 
   void _showNotificationPanel() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificationScreen()),
+    );
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -288,254 +255,35 @@ class _ExploreScreenState extends State<ExploreScreen>
   void _listenToPosts() {
     _postsSub?.cancel();
 
-    _postsSub = PostService.streamPins().listen((posts) {
-      if (!mounted) return;
+    _postsSub = PostService.streamPins().listen(
+      (posts) {
+        if (!mounted) return;
 
-      final all = posts.map((post) {
-        double lat = 0.0;
-        double lng = 0.0;
-        if (post['latitude'] != null) {
-          lat = (post['latitude'] as num).toDouble();
-        }
-        if (post['longitude'] != null) {
-          lng = (post['longitude'] as num).toDouble();
-        }
+        final all = posts
+            .map((post) {
+              final postOwnerRole = post['ownerRole'];
+              final targetRole = _isWorker ? 'maker' : 'finder';
 
-        final postOwnerRole = post['ownerRole'];
-        final targetRole = _isWorker ? 'maker' : 'finder';
+              if (postOwnerRole != null && postOwnerRole != targetRole) {
+                return null;
+              }
 
-        if (postOwnerRole != null && postOwnerRole != targetRole) {
-          return null;
-        }
+              return post;
+            })
+            .where((element) => element != null)
+            .cast<Map<String, dynamic>>()
+            .toList();
 
-        return {
-          ...post,
-          'location': LatLng(lat, lng),
-        };
-      }).where((element) => element != null).cast<Map<String, dynamic>>().toList();
-
-      setState(() {
-        _allWorkers = all;
-        _filteredWorkers = List.from(_allWorkers);
-      });
-    }, onError: (error) {
-      debugPrint("❌ Error in streamPins: $error");
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // LOCATION METHODS
-  // ═══════════════════════════════════════════════════════════
-  Future<void> _checkLocationOnly() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isLocationEnabledInSettings = prefs.getBool('settings_location_enabled') ?? true;
-
-    if (!isLocationEnabledInSettings) return;
-
-    try {
-      Position p = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      if (mounted) {
         setState(() {
-          _userCurrentLocation = LatLng(p.latitude, p.longitude);
-          _currentZoom = 15.0;
+          _allWorkers = all;
+          _filteredWorkers = List.from(_allWorkers);
         });
-      }
-    } catch (_) {}
-  }
-
-  Future<void> _startInitialZoomSequence() async {
-    final start = DateTime.now();
-
-    Future<void> waitMin2Seconds() async {
-      const int minMillis = 2000;
-      final int elapsed = DateTime.now().difference(start).inMilliseconds;
-      if (elapsed < minMillis) {
-        await Future.delayed(Duration(milliseconds: minMillis - elapsed));
-      }
-    }
-
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        await waitMin2Seconds();
-        _cancelLoadingWithoutZoom();
-        return;
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.deniedForever ||
-          permission == LocationPermission.denied) {
-        await waitMin2Seconds();
-        _cancelLoadingWithoutZoom();
-        return;
-      }
-
-      Position p = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      await waitMin2Seconds();
-
-      _animateMapMove(LatLng(p.latitude, p.longitude), 15.0, const Duration(milliseconds: 1200));
-
-      if (mounted) {
-        setState(() {
-          _userCurrentLocation = LatLng(p.latitude, p.longitude);
-          _isSearchingLocation = false;
-        });
-      }
-      _hasInitialZoomHappened = true;
-    } catch (_) {
-      await waitMin2Seconds();
-      _cancelLoadingWithoutZoom();
-    }
-  }
-
-  void _cancelLoadingWithoutZoom() {
-    if (mounted) {
-      setState(() {
-        _isSearchingLocation = false;
-        _userCurrentLocation = null;
-      });
-      _hasInitialZoomHappened = true;
-    }
-  }
-
-  Future<void> _zoomToUser() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-
-    if (!serviceEnabled) {
-      if (!mounted) return;
-      _showLocationServiceDialog();
-      return;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return;
-    }
-
-    if (permission == LocationPermission.deniedForever) return;
-
-    try {
-      Position p = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      if (mounted) {
-        setState(() => _userCurrentLocation = LatLng(p.latitude, p.longitude));
-        _animateMapMove(_userCurrentLocation!, 16.0, const Duration(milliseconds: 400));
-      }
-    } catch (e) {
-      debugPrint("Error getting location: $e");
-    }
-  }
-
-  void _showLocationServiceDialog() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: Row(
-          children: [
-            const Icon(Icons.location_off_rounded, color: Colors.redAccent),
-            const SizedBox(width: 10),
-            Text(
-              "Location Disabled",
-              style: TextStyle(
-                color: isDark ? Colors.white : Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          "Please enable location services to find your position on the map.",
-          style: TextStyle(color: isDark ? Colors.grey[300] : Colors.black87),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("CANCEL", style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Geolocator.openLocationSettings();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.brandMain,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text("ENABLE NOW"),
-          ),
-        ],
-      ),
+      },
+      onError: (error) {
+        debugPrint("❌ Error in streamPins: $error");
+      },
     );
   }
-
-  // ═══════════════════════════════════════════════════════════
-  // MAP ANIMATIONS
-  // ═══════════════════════════════════════════════════════════
-  void _animateMapMove(LatLng dest, double destZoom, Duration duration) {
-    final latTween = Tween<double>(
-      begin: _mapController.camera.center.latitude,
-      end: dest.latitude,
-    );
-    final lngTween = Tween<double>(
-      begin: _mapController.camera.center.longitude,
-      end: dest.longitude,
-    );
-    final zoomTween = Tween<double>(
-      begin: _mapController.camera.zoom,
-      end: destZoom,
-    );
-
-    final controller = AnimationController(duration: duration, vsync: this);
-    final animation = CurvedAnimation(parent: controller, curve: Curves.easeInOut);
-
-    controller.addListener(() {
-      if (!mounted) return;
-      _mapController.move(
-        LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
-        zoomTween.evaluate(animation),
-      );
-    });
-
-    controller.addStatusListener((s) {
-      if (s == AnimationStatus.completed || s == AnimationStatus.dismissed) {
-        controller.dispose();
-      }
-    });
-
-    controller.forward();
-  }
-
-  void _animateMapRotationTo(double targetDeg, {Duration duration = const Duration(milliseconds: 300)}) {
-    final start = _currentRotation;
-    final rotTween = Tween<double>(begin: start, end: targetDeg);
-    final controller = AnimationController(duration: duration, vsync: this);
-    final animation = CurvedAnimation(parent: controller, curve: Curves.easeOutCubic);
-
-    controller.addListener(() {
-      if (!mounted) return;
-      _mapController.rotate(rotTween.evaluate(animation));
-    });
-
-    controller.addStatusListener((s) {
-      if (s == AnimationStatus.completed || s == AnimationStatus.dismissed) {
-        controller.dispose();
-      }
-    });
-
-    controller.forward();
-  }
-
-  void _resetNorth() => _animateMapRotationTo(0);
 
   // ═══════════════════════════════════════════════════════════
   // SEARCH METHODS
@@ -613,12 +361,19 @@ class _ExploreScreenState extends State<ExploreScreen>
       results.addAll(recentMatches);
 
       // Worker matches
-      final workerMatches = _allWorkers.where((item) {
-        final name = (item['title'] ?? item['name'] ?? '').toString().toLowerCase();
-        final role = (item['roleLabel'] ?? item['role'] ?? '').toString().toLowerCase();
-        final address = (item['address'] ?? '').toString().toLowerCase();
-        return name.contains(q) || role.contains(q) || address.contains(q);
-      }).take(5).map((w) => {...w, 'type': 'worker'});
+      final workerMatches = _allWorkers
+          .where((item) {
+            final name = (item['title'] ?? item['name'] ?? '')
+                .toString()
+                .toLowerCase();
+            final role = (item['roleLabel'] ?? item['role'] ?? '')
+                .toString()
+                .toLowerCase();
+            final address = (item['address'] ?? '').toString().toLowerCase();
+            return name.contains(q) || role.contains(q) || address.contains(q);
+          })
+          .take(5)
+          .map((w) => {...w, 'type': 'worker'});
       results.addAll(workerMatches);
 
       // Trending matches
@@ -648,13 +403,17 @@ class _ExploreScreenState extends State<ExploreScreen>
     }
 
     _performSearch(searchText);
-    _maybeMoveCameraToSearchLocation(mainQuery: searchText);
   }
 
   void _performSearch(String query) {
     final searchText = query.trim();
 
-    if (searchText.isEmpty) {
+    if (searchText.isEmpty &&
+        _selectedCategory == null &&
+        !_verifiedOnly &&
+        !_liveOnly &&
+        !_topRatedOnly &&
+        !_trustedOnly) {
       setState(() {
         _filteredWorkers = List.from(_allWorkers);
         _isSearchingWorker = false;
@@ -669,35 +428,44 @@ class _ExploreScreenState extends State<ExploreScreen>
       if (!mounted) return;
 
       final searchTextLower = searchText.toLowerCase();
-      final locationText = _locationSearchController.text.toLowerCase().trim();
 
       List<Map<String, dynamic>> results = _allWorkers.where((worker) {
-        final name = (worker['title'] ?? worker['name'] ?? '').toString().toLowerCase();
-        final role = (worker['roleLabel'] ?? worker['role'] ?? '').toString().toLowerCase();
+        final name = (worker['title'] ?? worker['name'] ?? '')
+            .toString()
+            .toLowerCase();
+        final role = (worker['roleLabel'] ?? worker['role'] ?? '')
+            .toString()
+            .toLowerCase();
         final address = (worker['address'] ?? '').toString().toLowerCase();
         final rating = (worker['rating'] ?? 0).toDouble();
         final experience = (worker['experience'] ?? 0).toDouble();
         final price = (worker['price'] ?? 0).toDouble();
 
-        final matchesMainQuery = searchTextLower.isEmpty ||
+        final matchesMainQuery =
+            searchTextLower.isEmpty ||
             name.contains(searchTextLower) ||
             role.contains(searchTextLower) ||
             address.contains(searchTextLower);
 
-        final matchesLocationQuery = locationText.isEmpty ||
-            address.contains(locationText) ||
-            name.contains(locationText);
+        final matchesCategory =
+            _selectedCategory == null ||
+            role.contains(_selectedCategory!.toLowerCase());
 
         final matchesVerified = !_verifiedOnly || worker['verified'] == true;
         final matchesLive = !_liveOnly || worker['isLive'] == true;
-        final matchesGender = _selectedGender == "Any" || worker['gender'] == _selectedGender;
+        final matchesGender =
+            _selectedGender == "Any" || worker['gender'] == _selectedGender;
         final matchesExp = experience >= _minExperience;
         final matchesTopRated = !_topRatedOnly || rating >= 4.5;
-        final matchesTrusted = !_trustedOnly || worker['trusted'] == true || worker['isTrusted'] == true;
-        final matchesPrice = price >= _priceRange.start && price <= _priceRange.end;
+        final matchesTrusted =
+            !_trustedOnly ||
+            worker['trusted'] == true ||
+            worker['isTrusted'] == true;
+        final matchesPrice =
+            price >= _priceRange.start && price <= _priceRange.end;
 
         return matchesMainQuery &&
-            matchesLocationQuery &&
+            matchesCategory &&
             matchesVerified &&
             matchesLive &&
             matchesGender &&
@@ -714,102 +482,32 @@ class _ExploreScreenState extends State<ExploreScreen>
         _filteredWorkers = results;
         _showSuggestions = false;
       });
-
-      if (results.isNotEmpty) {
-        final firstLoc = results.first['location'];
-        if (firstLoc is LatLng) {
-          _animateMapMove(firstLoc, 15.0, const Duration(milliseconds: 500));
-        }
-      }
     });
   }
 
   void _sortResults(List<Map<String, dynamic>> results) {
     results.sort((a, b) {
       switch (_sortBy) {
-        case 'nearest':
-          final aLoc = a['location'];
-          final bLoc = b['location'];
-          if (aLoc is LatLng && bLoc is LatLng) {
-            final aDist = _getDistanceKm(aLoc);
-            final bDist = _getDistanceKm(bLoc);
-            if (aDist != null && bDist != null) {
-              final diff = aDist.compareTo(bDist);
-              if (diff != 0) return diff;
-            }
-          }
-          return (b['rating'] ?? 0).toDouble().compareTo((a['rating'] ?? 0).toDouble());
         case 'rating':
-          return (b['rating'] ?? 0).toDouble().compareTo((a['rating'] ?? 0).toDouble());
+          return (b['rating'] ?? 0).toDouble().compareTo(
+            (a['rating'] ?? 0).toDouble(),
+          );
         case 'price_low':
-          return (a['price'] ?? 0).toDouble().compareTo((b['price'] ?? 0).toDouble());
+          return (a['price'] ?? 0).toDouble().compareTo(
+            (b['price'] ?? 0).toDouble(),
+          );
         case 'price_high':
-          return (b['price'] ?? 0).toDouble().compareTo((a['price'] ?? 0).toDouble());
+          return (b['price'] ?? 0).toDouble().compareTo(
+            (a['price'] ?? 0).toDouble(),
+          );
         case 'experience':
-          return (b['experience'] ?? 0).toDouble().compareTo((a['experience'] ?? 0).toDouble());
+          return (b['experience'] ?? 0).toDouble().compareTo(
+            (a['experience'] ?? 0).toDouble(),
+          );
         default:
           return 0;
       }
     });
-  }
-
-  double? _getDistanceKm(LatLng workerLocation) {
-    if (_userCurrentLocation == null) return null;
-    return _distance.as(LengthUnit.Kilometer, _userCurrentLocation!, workerLocation);
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // GEOCODING
-  // ═══════════════════════════════════════════════════════════
-  Future<LatLng?> _geocodeLocation(String query) async {
-    final q = query.trim();
-    if (q.isEmpty) return null;
-
-    final latLngMatch = RegExp(r'^\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*$').firstMatch(q);
-    if (latLngMatch != null) {
-      final lat = double.tryParse(latLngMatch.group(1)!);
-      final lng = double.tryParse(latLngMatch.group(3)!);
-      if (lat != null && lng != null) return LatLng(lat, lng);
-    }
-
-    final uri = Uri.parse(
-      'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(q)}&format=json&limit=1&countrycodes=bd',
-    );
-
-    try {
-      final resp = await http
-          .get(uri, headers: {'User-Agent': 'findus-app/1.0'})
-          .timeout(const Duration(seconds: 8));
-
-      if (resp.statusCode == 200) {
-        final arr = jsonDecode(resp.body);
-        if (arr is List && arr.isNotEmpty) {
-          final lat = double.tryParse(arr[0]['lat']?.toString() ?? '');
-          final lon = double.tryParse(arr[0]['lon']?.toString() ?? '');
-          if (lat != null && lon != null) return LatLng(lat, lon);
-        }
-      }
-    } catch (_) {}
-
-    return null;
-  }
-
-  bool _looksLikeLocation(String text) {
-    final t = text.trim().toLowerCase();
-    if (t.isEmpty) return false;
-    if (t.contains(',')) return true;
-    return false;
-  }
-
-  Future<void> _maybeMoveCameraToSearchLocation({String? mainQuery}) async {
-    final locText = _locationSearchController.text.trim();
-    final mainText = (mainQuery ?? '').trim();
-    String q = locText.isNotEmpty ? locText : (_looksLikeLocation(mainText) ? mainText : '');
-    if (q.isEmpty) return;
-    final pos = await _geocodeLocation(q);
-    if (pos != null) {
-      _animateMapMove(pos, 13.5, const Duration(milliseconds: 600));
-    }
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -821,10 +519,15 @@ class _ExploreScreenState extends State<ExploreScreen>
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
         if (doc.exists) {
           final data = doc.data() ?? {};
-          final plan = (data['subscription_plan'] ?? 'free').toString().toLowerCase();
+          final plan = (data['subscription_plan'] ?? 'free')
+              .toString()
+              .toLowerCase();
           isProUser = plan == 'pro' || plan == 'business';
         }
       } catch (e) {
@@ -841,13 +544,11 @@ class _ExploreScreenState extends State<ExploreScreen>
       topRatedOnly: _topRatedOnly,
       trustedOnly: _trustedOnly,
       selectedCategory: _selectedCategory,
-      maxDistance: _maxDistance,
       sortBy: _sortBy,
     );
 
     final result = await showFilterBottomSheet(
       context: context,
-      locationController: _locationSearchController,
       currentFilters: currentFilters,
       isProUser: isProUser,
     );
@@ -864,18 +565,19 @@ class _ExploreScreenState extends State<ExploreScreen>
       _trustedOnly = result.trustedOnly;
       _sortBy = result.sortBy;
       _selectedCategory = result.selectedCategory;
-      _maxDistance = result.maxDistance;
     });
 
     _performSearch(_mainSearchController.text);
-    _maybeMoveCameraToSearchLocation(mainQuery: _mainSearchController.text);
   }
 
   // ═══════════════════════════════════════════════════════════
   // WORKER PROFILE
   // ═══════════════════════════════════════════════════════════
   Worker _mapDataToWorker(Map<String, dynamic> data) {
-    final String uid = (data['ownerId'] ?? data['uid'] ?? data['userId'] ?? data['id'] ?? '').toString().trim();
+    final String uid =
+        (data['ownerId'] ?? data['uid'] ?? data['userId'] ?? data['id'] ?? '')
+            .toString()
+            .trim();
 
     String userRole = 'finder';
     if (data['ownerRole'] != null) {
@@ -917,7 +619,9 @@ class _ExploreScreenState extends State<ExploreScreen>
       isVerified: data['verified'] == true,
       experience: double.tryParse(data['experience']?.toString() ?? '0'),
       gender: data['gender']?.toString(),
-      languages: data['language'] != null ? [data['language'].toString()] : null,
+      languages: data['language'] != null
+          ? [data['language'].toString()]
+          : null,
       isLive: data['isLive'] ?? false,
       isTrusted: data['trusted'] ?? false,
       isPromoted: data['isPromoted'] ?? false,
@@ -941,7 +645,10 @@ class _ExploreScreenState extends State<ExploreScreen>
   // EMERGENCY & DIALOGS
   // ═══════════════════════════════════════════════════════════
   void _openEmergency() {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const EmergencyScreen()),
+    );
   }
 
   void _showLoginRequiredDialog() {
@@ -961,7 +668,10 @@ class _ExploreScreenState extends State<ExploreScreen>
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.brandMain,
@@ -989,11 +699,58 @@ class _ExploreScreenState extends State<ExploreScreen>
     return Scaffold(
       key: _scaffoldKey,
       endDrawer: const ProfileSideBar(),
-      resizeToAvoidBottomInset: false,
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : AppColors.brandLight,
       body: Stack(
         children: [
-          // MAP
-          _buildMap(isDark),
+          // MAIN LIST VIEW
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 70), // Space for search bar
+                Expanded(
+                  child: _filteredWorkers.isEmpty
+                      ? _buildEmptyState(isDark, textColor, subtitleColor)
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          itemCount: _filteredWorkers.length,
+                          itemBuilder: (context, index) {
+                            final data = _filteredWorkers[index];
+                            if (_blockedUserIds.contains(
+                              (data['id'] ?? data['ownerId']).toString(),
+                            )) {
+                              return const SizedBox.shrink();
+                            }
+                            final worker = _mapDataToWorker(data);
+                            return UniversalWorkerCard(
+                              id: worker.uid,
+                              name: worker.name,
+                              role: worker.userRole == 'finder'
+                                  ? 'FINDER'
+                                  : 'MAKER',
+                              imageUrl: worker.image,
+                              address: worker.location,
+                              rating: worker.rating.toStringAsFixed(1),
+                              completed: (data['completedCount'] ?? 0)
+                                  .toString(),
+                              reviews: (data['reviewCount'] ?? 0).toString(),
+                              price: worker.priceText,
+                              isVerifiedWorker: worker.isVerified,
+                              isTopRated: rating >= 4.5,
+                              isTrusted: worker.isTrusted,
+                              isOnline: worker.isLive,
+                              onTap: () => _showProfilePopup(data),
+                              onViewProfileTap: () => _showProfilePopup(data),
+                              jobLabel: worker.userRole == 'finder'
+                                  ? 'GIGS'
+                                  : 'TASKS',
+                              primaryButtonText: "VIEW DETAILS",
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
 
           // TAP TO CLOSE SUGGESTIONS
           if (_showSuggestions)
@@ -1008,39 +765,42 @@ class _ExploreScreenState extends State<ExploreScreen>
               ),
             ),
 
-          // LOADING OVERLAY
-          if (_isSearchingLocation || _isSearchingWorker)
-            _buildLoadingOverlay(),
-
           // SEARCH BAR & SUGGESTIONS
-          if (!_isSearchingLocation)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 10,
-              left: 15,
-              right: 15,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSearchBar(isDark, bgColor, textColor, hintColor),
-                  if (_showSuggestions)
-                    _buildSuggestionsDropdown(isDark, bgColor, textColor, subtitleColor),
-                ],
-              ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 15,
+            right: 15,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSearchBar(isDark, bgColor, textColor, hintColor),
+                if (_showSuggestions)
+                  _buildSuggestionsDropdown(
+                    isDark,
+                    bgColor,
+                    textColor,
+                    subtitleColor,
+                  ),
+              ],
             ),
+          ),
 
-          // Search bar এর নিচে results count দেখাও
-          if (!_isSearchingLocation && _mainSearchController.text.isNotEmpty)
+          // Search Results Count
+          if (_mainSearchController.text.isNotEmpty || _activeFilterCount > 0)
             Positioned(
               top: MediaQuery.of(context).padding.top + 75,
               left: 15,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.brandMain,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  "${_filteredWorkers.length} found",
+                  "${_filteredWorkers.length} results",
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -1050,110 +810,89 @@ class _ExploreScreenState extends State<ExploreScreen>
               ),
             ),
 
-          // _buildMap() এর পরে add করো
-          if (!_isSearchingLocation && _filteredWorkers.isEmpty)
-            Positioned(
-              bottom: 200,
-              left: 20,
-              right: 20,
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.search_off, size: 48, color: Colors.grey.shade400),
-                    const SizedBox(height: 12),
-                    Text(
-                      "No workers found",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Try adjusting your filters or search in a different area",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: subtitleColor, fontSize: 13),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton.icon(
-                      onPressed: () {
-                        _clearSearch();
-                        setState(() {
-                          _priceRange = const RangeValues(0, 10000);
-                          _verifiedOnly = false;
-                          _liveOnly = false;
-                          _topRatedOnly = false;
-                          _trustedOnly = false;
-                          _selectedGender = "Any";
-                          _minExperience = 0;
-                        });
-                        _performSearch('');
-                      },
-                      icon: const Icon(Icons.refresh),
-                      label: const Text("Reset Filters"),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
           // RIGHT SIDE BUTTONS
-          if (!_isSearchingLocation)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 75,
-              right: 15,
-              child: Column(
-                children: [
-                  _buildNotificationButton(isDark, bgColor),
-                  const SizedBox(height: 12),
-                  _mapBtn(Icons.tune, AppColors.brandDark, _showFilterPanel, isDark),
-                  const SizedBox(height: 12),
-                  _compassBtn(isDark),
-                  const SizedBox(height: 12),
-                  _mapBtn(Icons.my_location, AppColors.brandMain, _zoomToUser, isDark),
-                ],
-              ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 75,
+            right: 15,
+            child: Column(
+              children: [
+                _buildNotificationButton(isDark, bgColor),
+                const SizedBox(height: 12),
+                _buildFilterButton(isDark),
+              ],
             ),
+          ),
 
           // EMERGENCY BUTTON
-          if (!_isSearchingLocation)
-            Positioned(
-              bottom: 250,
-              right: 20,
-              child: _mapBtn(Icons.medical_services_outlined, Colors.redAccent, _openEmergency, isDark),
+          Positioned(
+            bottom: 250,
+            right: 20,
+            child: _mapBtn(
+              Icons.medical_services_outlined,
+              Colors.redAccent,
+              _openEmergency,
+              isDark,
             ),
+          ),
 
           // ROLE SWITCH
-          if (!_isSearchingLocation)
-            Positioned(
-              bottom: 180,
-              right: 20,
-              child: _buildRoleSwitchButton(),
-            ),
-
-          // ZOOM CONTROLS
-          if (!_isSearchingLocation)
-            Positioned(
-              bottom: 110,
-              left: 20,
-              child: _buildZoomControls(isDark),
-            ),
+          Positioned(bottom: 180, right: 20, child: _buildRoleSwitchButton()),
 
           // POST FAB
-          if (!_isSearchingLocation)
-            Positioned(
-              bottom: 110,
-              right: 20,
-              child: _buildPostFAB(),
+          Positioned(bottom: 110, right: 20, child: _buildPostFAB()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(bool isDark, Color textColor, Color subtitleColor) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off, size: 80, color: Colors.grey.shade400),
+          const SizedBox(height: 20),
+          Text(
+            "No services found",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: textColor,
             ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Try broadening your search or resetting filters",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: subtitleColor, fontSize: 14),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () {
+              _clearSearch();
+              setState(() {
+                _priceRange = const RangeValues(0, 10000);
+                _verifiedOnly = false;
+                _liveOnly = false;
+                _topRatedOnly = false;
+                _trustedOnly = false;
+                _selectedGender = "Any";
+                _minExperience = 0;
+                _selectedCategory = null;
+              });
+              _performSearch('');
+            },
+            icon: const Icon(Icons.refresh),
+            label: const Text("Reset All Filters"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.brandMain,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1168,9 +907,12 @@ class _ExploreScreenState extends State<ExploreScreen>
       options: MapOptions(
         initialCenter: _dhakaLocation,
         initialZoom: 2.5,
-        interactionOptions: const InteractionOptions(flags: InteractiveFlag.all),
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.all,
+        ),
         onPositionChanged: (camera, hasGesture) {
-          if (_currentZoom != camera.zoom || _currentRotation != camera.rotation) {
+          if (_currentZoom != camera.zoom ||
+              _currentRotation != camera.rotation) {
             setState(() {
               _currentZoom = camera.zoom;
               _currentRotation = camera.rotation;
@@ -1184,45 +926,70 @@ class _ExploreScreenState extends State<ExploreScreen>
           userAgentPackageName: 'com.findus.app',
           tileBuilder: isDark
               ? (context, widget, tile) => ColorFiltered(
-            colorFilter: const ColorFilter.matrix([
-              -1, 0, 0, 0, 255,
-              0, -1, 0, 0, 255,
-              0, 0, -1, 0, 255,
-              0, 0, 0, 1, 0,
-            ]),
-            child: widget,
-          )
+                  colorFilter: const ColorFilter.matrix([
+                    -1,
+                    0,
+                    0,
+                    0,
+                    255,
+                    0,
+                    -1,
+                    0,
+                    0,
+                    255,
+                    0,
+                    0,
+                    -1,
+                    0,
+                    255,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                  ]),
+                  child: widget,
+                )
               : null,
         ),
         MarkerLayer(
           markers: _filteredWorkers
-              .where((data) => !_blockedUserIds.contains((data['id'] ?? data['ownerId']).toString()))
-              .map((data) {
-            final LatLng workerLoc = data['location'] is LatLng
-                ? data['location']
-                : const LatLng(23.8103, 90.4125);
-
-            final double markerSize = _getMarkerSize(_currentZoom);
-
-            return Marker(
-              point: workerLoc,
-              width: markerSize,
-              height: markerSize,
-              alignment: Alignment.center,
-              child: GestureDetector(
-                onTap: () => _showProfilePopup(data),
-                child: ResponsiveWorkerPin(
-                  key: ValueKey("${data['id']}_${_currentZoom.toInt()}"),
-                  role: (data['roleLabel'] ?? data['role'] ?? 'Worker').toString(),
-                  price: data['priceLabel']?.toString() ?? data['price']?.toString() ?? 'Negotiable',
-                  isLive: data['isLive'] ?? false,
-                  currentZoom: _currentZoom,
-                  distanceKm: _getDistanceKm(workerLoc),
-                  isPromoted: data['isPromoted'] ?? false,
+              .where(
+                (data) => !_blockedUserIds.contains(
+                  (data['id'] ?? data['ownerId']).toString(),
                 ),
-              ),
-            );
-          }).toList(),
+              )
+              .map((data) {
+                final LatLng workerLoc = data['location'] is LatLng
+                    ? data['location']
+                    : const LatLng(23.8103, 90.4125);
+
+                final double markerSize = _getMarkerSize(_currentZoom);
+
+                return Marker(
+                  point: workerLoc,
+                  width: markerSize,
+                  height: markerSize,
+                  alignment: Alignment.center,
+                  child: GestureDetector(
+                    onTap: () => _showProfilePopup(data),
+                    child: ResponsiveWorkerPin(
+                      key: ValueKey("${data['id']}_${_currentZoom.toInt()}"),
+                      role: (data['roleLabel'] ?? data['role'] ?? 'Worker')
+                          .toString(),
+                      price:
+                          data['priceLabel']?.toString() ??
+                          data['price']?.toString() ??
+                          'Negotiable',
+                      isLive: data['isLive'] ?? false,
+                      currentZoom: _currentZoom,
+                      distanceKm: _getDistanceKm(workerLoc),
+                      isPromoted: data['isPromoted'] ?? false,
+                    ),
+                  ),
+                );
+              })
+              .toList(),
         ),
         if (_userCurrentLocation != null)
           MarkerLayer(
@@ -1236,7 +1003,13 @@ class _ExploreScreenState extends State<ExploreScreen>
                     color: AppColors.brandMain,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 6, spreadRadius: 1)],
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1261,7 +1034,9 @@ class _ExploreScreenState extends State<ExploreScreen>
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
               shape: BoxShape.circle,
-              boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black26, blurRadius: 4),
+              ],
             ),
             child: const Icon(Icons.tune, color: AppColors.brandDark),
           ),
@@ -1314,11 +1089,19 @@ class _ExploreScreenState extends State<ExploreScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Lottie.asset('assets/animations/search.json', width: 200, height: 200),
+              Lottie.asset(
+                'assets/animations/search.json',
+                width: 200,
+                height: 200,
+              ),
               const SizedBox(height: 20),
-              Text(
-                _isSearchingLocation ? "Finding your location..." : "Searching workers...",
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              const Text(
+                "Searching services...",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -1327,13 +1110,24 @@ class _ExploreScreenState extends State<ExploreScreen>
     );
   }
 
-  Widget _buildSearchBar(bool isDark, Color bgColor, Color textColor, Color hintColor) {
+  Widget _buildSearchBar(
+    bool isDark,
+    Color bgColor,
+    Color textColor,
+    Color hintColor,
+  ) {
     return Container(
       height: 55,
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(30),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -1345,7 +1139,10 @@ class _ExploreScreenState extends State<ExploreScreen>
             backgroundColor: AppColors.brandDark,
             child: Padding(
               padding: const EdgeInsets.all(2),
-              child: Image.asset("assets/images/app_icon.png", fit: BoxFit.contain),
+              child: Image.asset(
+                "assets/images/app_icon.png",
+                fit: BoxFit.contain,
+              ),
             ),
           ),
 
@@ -1365,7 +1162,7 @@ class _ExploreScreenState extends State<ExploreScreen>
               onChanged: _updateSearchSuggestions,
               onSubmitted: _executeSearch,
               decoration: InputDecoration(
-                hintText: "Search workers, services, locations...",
+                hintText: "Search services, workers...",
                 hintStyle: TextStyle(color: hintColor, fontSize: 14),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -1383,20 +1180,6 @@ class _ExploreScreenState extends State<ExploreScreen>
                 child: Icon(Icons.close_rounded, color: hintColor, size: 20),
               ),
             ),
-
-          // ❌ REMOVED: Search Button
-          // GestureDetector(
-          //   onTap: () => _executeSearch(_mainSearchController.text),
-          //   child: Container(
-          //     padding: const EdgeInsets.all(10),
-          //     margin: const EdgeInsets.only(right: 4),
-          //     decoration: BoxDecoration(
-          //       color: AppColors.brandMain.withOpacity(0.1),
-          //       shape: BoxShape.circle,
-          //     ),
-          //     child: const Icon(Icons.search_rounded, color: AppColors.brandMain, size: 22),
-          //   ),
-          // ),
 
           const SizedBox(width: 8),
 
@@ -1423,7 +1206,12 @@ class _ExploreScreenState extends State<ExploreScreen>
     );
   }
 
-  Widget _buildSuggestionsDropdown(bool isDark, Color bgColor, Color textColor, Color subtitleColor) {
+  Widget _buildSuggestionsDropdown(
+    bool isDark,
+    Color bgColor,
+    Color textColor,
+    Color subtitleColor,
+  ) {
     final hasQuery = _mainSearchController.text.trim().isNotEmpty;
     final hasResults = _searchSuggestions.isNotEmpty;
     final hasRecent = _recentSearches.isNotEmpty;
@@ -1437,7 +1225,13 @@ class _ExploreScreenState extends State<ExploreScreen>
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 8))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -1453,31 +1247,47 @@ class _ExploreScreenState extends State<ExploreScreen>
                     child: SizedBox(
                       width: 24,
                       height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.brandMain),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.brandMain,
+                      ),
                     ),
                   ),
                 )
               else if (!hasQuery) ...[
                 if (hasRecent) ...[
-                  _buildSectionHeader("Recent Searches", Icons.history, textColor, onClear: _clearRecentSearches),
-                  ..._recentSearches.take(5).map((search) => _buildSuggestionTile(
-                    icon: Icons.history,
-                    iconColor: Colors.grey,
-                    title: search,
-                    textColor: textColor,
-                    onTap: () => _executeSearch(search),
-                    onRemove: () => _removeRecentSearch(search),
-                  )),
+                  _buildSectionHeader(
+                    "Recent Searches",
+                    Icons.history,
+                    textColor,
+                    onClear: _clearRecentSearches,
+                  ),
+                  ..._recentSearches
+                      .take(5)
+                      .map(
+                        (search) => _buildSuggestionTile(
+                          icon: Icons.history,
+                          iconColor: Colors.grey,
+                          title: search,
+                          textColor: textColor,
+                          onTap: () => _executeSearch(search),
+                          onRemove: () => _removeRecentSearch(search),
+                        ),
+                      ),
                   Divider(height: 1, color: textColor.withOpacity(0.1)),
                 ],
                 _buildSectionHeader("Trending", Icons.trending_up, textColor),
-                ..._trendingSearches.take(5).map((search) => _buildSuggestionTile(
-                  icon: Icons.trending_up,
-                  iconColor: Colors.orange,
-                  title: search,
-                  textColor: textColor,
-                  onTap: () => _executeSearch(search),
-                )),
+                ..._trendingSearches
+                    .take(5)
+                    .map(
+                      (search) => _buildSuggestionTile(
+                        icon: Icons.trending_up,
+                        iconColor: Colors.orange,
+                        title: search,
+                        textColor: textColor,
+                        onTap: () => _executeSearch(search),
+                      ),
+                    ),
               ] else if (!hasResults)
                 Padding(
                   padding: const EdgeInsets.all(24),
@@ -1519,7 +1329,11 @@ class _ExploreScreenState extends State<ExploreScreen>
                     );
                   }
 
-                  return _buildWorkerSuggestionTile(item, textColor, subtitleColor);
+                  return _buildWorkerSuggestionTile(
+                    item,
+                    textColor,
+                    subtitleColor,
+                  );
                 }),
               const SizedBox(height: 8),
             ],
@@ -1529,7 +1343,12 @@ class _ExploreScreenState extends State<ExploreScreen>
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData icon, Color textColor, {VoidCallback? onClear}) {
+  Widget _buildSectionHeader(
+    String title,
+    IconData icon,
+    Color textColor, {
+    VoidCallback? onClear,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 12, 6),
       child: Row(
@@ -1553,7 +1372,11 @@ class _ExploreScreenState extends State<ExploreScreen>
                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 child: Text(
                   "Clear all",
-                  style: TextStyle(fontSize: 12, color: AppColors.brandMain, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.brandMain,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
@@ -1591,18 +1414,30 @@ class _ExploreScreenState extends State<ExploreScreen>
                 onTap: onRemove,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8),
-                  child: Icon(Icons.close, size: 18, color: textColor.withOpacity(0.4)),
+                  child: Icon(
+                    Icons.close,
+                    size: 18,
+                    color: textColor.withOpacity(0.4),
+                  ),
                 ),
               )
             else
-              Icon(Icons.north_west, size: 14, color: textColor.withOpacity(0.3)),
+              Icon(
+                Icons.north_west,
+                size: 14,
+                color: textColor.withOpacity(0.3),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildWorkerSuggestionTile(Map<String, dynamic> item, Color textColor, Color subtitleColor) {
+  Widget _buildWorkerSuggestionTile(
+    Map<String, dynamic> item,
+    Color textColor,
+    Color subtitleColor,
+  ) {
     final name = (item['title'] ?? item['name'] ?? 'Unknown').toString();
     final role = (item['roleLabel'] ?? item['role'] ?? '').toString();
     final image = (item['image'] ?? '').toString();
@@ -1623,8 +1458,16 @@ class _ExploreScreenState extends State<ExploreScreen>
                 CircleAvatar(
                   radius: 22,
                   backgroundColor: Colors.grey.shade300,
-                  backgroundImage: image.isNotEmpty ? NetworkImage(image) : null,
-                  child: image.isEmpty ? Icon(Icons.person, color: Colors.grey.shade600, size: 24) : null,
+                  backgroundImage: image.isNotEmpty
+                      ? NetworkImage(image)
+                      : null,
+                  child: image.isEmpty
+                      ? Icon(
+                          Icons.person,
+                          color: Colors.grey.shade600,
+                          size: 24,
+                        )
+                      : null,
                 ),
                 if (isLive)
                   Positioned(
@@ -1649,26 +1492,41 @@ class _ExploreScreenState extends State<ExploreScreen>
                 children: [
                   Text(
                     name,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textColor),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      if (role.isNotEmpty) Text(role, style: TextStyle(fontSize: 12, color: subtitleColor)),
+                      if (role.isNotEmpty)
+                        Text(
+                          role,
+                          style: TextStyle(fontSize: 12, color: subtitleColor),
+                        ),
                       if (rating > 0) ...[
                         const SizedBox(width: 8),
                         const Icon(Icons.star, size: 12, color: Colors.amber),
                         const SizedBox(width: 2),
-                        Text(rating.toStringAsFixed(1), style: TextStyle(fontSize: 11, color: subtitleColor)),
+                        Text(
+                          rating.toStringAsFixed(1),
+                          style: TextStyle(fontSize: 11, color: subtitleColor),
+                        ),
                       ],
                     ],
                   ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 14, color: textColor.withOpacity(0.3)),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: textColor.withOpacity(0.3),
+            ),
           ],
         ),
       ),
@@ -1687,7 +1545,9 @@ class _ExploreScreenState extends State<ExploreScreen>
             decoration: BoxDecoration(
               color: bgColor,
               shape: BoxShape.circle,
-              boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black26, blurRadius: 4),
+              ],
             ),
             child: Icon(
               Icons.notifications_outlined,
@@ -1710,7 +1570,11 @@ class _ExploreScreenState extends State<ExploreScreen>
                 child: Center(
                   child: Text(
                     _unreadNotifCount > 9 ? '9+' : '$_unreadNotifCount',
-                    style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -1729,14 +1593,17 @@ class _ExploreScreenState extends State<ExploreScreen>
         height: 48,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: _isWorker ? [Colors.deepOrange, Colors.orange] : [Colors.blueAccent, Colors.lightBlue],
+            colors: _isWorker
+                ? [Colors.deepOrange, Colors.orange]
+                : [Colors.blueAccent, Colors.lightBlue],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: (_isWorker ? Colors.deepOrange : Colors.blueAccent).withOpacity(0.4),
+              color: (_isWorker ? Colors.deepOrange : Colors.blueAccent)
+                  .withOpacity(0.4),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -1769,12 +1636,18 @@ class _ExploreScreenState extends State<ExploreScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
-          onTap: () => _mapController.move(_mapController.camera.center, (_currentZoom + 1).clamp(2.0, 18.0)),
+          onTap: () => _mapController.move(
+            _mapController.camera.center,
+            (_currentZoom + 1).clamp(2.0, 18.0),
+          ),
           child: _squareBtn(Icons.add, isDark),
         ),
         const SizedBox(height: 8),
         GestureDetector(
-          onTap: () => _mapController.move(_mapController.camera.center, (_currentZoom - 1).clamp(2.0, 18.0)),
+          onTap: () => _mapController.move(
+            _mapController.camera.center,
+            (_currentZoom - 1).clamp(2.0, 18.0),
+          ),
           child: _squareBtn(Icons.remove, isDark),
         ),
         const SizedBox(height: 8),
@@ -1787,7 +1660,11 @@ class _ExploreScreenState extends State<ExploreScreen>
           ),
           child: Text(
             _getZoomScaleText(_currentZoom),
-            style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.brandDark, fontSize: 11),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.brandDark,
+              fontSize: 11,
+            ),
           ),
         ),
       ],
@@ -1805,9 +1682,15 @@ class _ExploreScreenState extends State<ExploreScreen>
         }
 
         if (_isWorker) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const EarnPostScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const EarnPostScreen()),
+          );
         } else {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportPostScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SupportPostScreen()),
+          );
         }
       },
       backgroundColor: _isWorker ? Colors.green : const Color(0xFFFFF59D),

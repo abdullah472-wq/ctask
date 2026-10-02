@@ -8,8 +8,6 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:findus_app/constants/app_colors.dart';
 import 'package:findus_app/screens/profile/unified_profile_screen.dart';
-import 'package:findus_app/screens/tabs/chat_screen.dart';
-import 'package:findus_app/services/firestore_chat_service.dart';
 import 'package:findus_app/widgets/universal_worker_card.dart';
 import 'package:findus_app/achievement/achievement_service.dart';
 import 'package:findus_app/screens/report/report_screen.dart';
@@ -37,7 +35,8 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
     return int.tryParse(v?.toString() ?? '') ?? fallback;
   }
 
-  String _s(dynamic v, [String fallback = '']) => (v ?? fallback).toString().trim();
+  String _s(dynamic v, [String fallback = '']) =>
+      (v ?? fallback).toString().trim();
 
   DateTime _asDate(dynamic v) {
     if (v is Timestamp) return v.toDate();
@@ -95,7 +94,9 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.brandMain));
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.brandMain),
+            );
           }
 
           final docs = snapshot.data?.docs ?? [];
@@ -115,7 +116,9 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
 
           return ListView.builder(
             padding: const EdgeInsets.fromLTRB(10, 10, 10, 100),
-            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
             itemCount: groupKeys.length,
             itemBuilder: (context, index) {
               final group = groupKeys[index];
@@ -135,13 +138,15 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                       ),
                     ),
                   ),
-                  ...groupDocs.map((doc) => _buildCompletedJobCard(
-                    context,
-                    jobId: doc.id,
-                    job: doc.data() as Map<String, dynamic>,
-                    currentUid: uid,
-                    isDark: isDark,
-                  )),
+                  ...groupDocs.map(
+                    (doc) => _buildCompletedJobCard(
+                      context,
+                      jobId: doc.id,
+                      job: doc.data() as Map<String, dynamic>,
+                      currentUid: uid,
+                      isDark: isDark,
+                    ),
+                  ),
                 ],
               );
             },
@@ -152,12 +157,12 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
   }
 
   Widget _buildCompletedJobCard(
-      BuildContext context, {
-        required String jobId,
-        required Map<String, dynamic> job,
-        required String currentUid,
-        required bool isDark,
-      }) {
+    BuildContext context, {
+    required String jobId,
+    required Map<String, dynamic> job,
+    required String currentUid,
+    required bool isDark,
+  }) {
     final finderId = _s(job['finderId']);
     final supporterId = _s(job['supporterId']);
     final otherUserId = (currentUid == supporterId) ? finderId : supporterId;
@@ -174,30 +179,51 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
       'Completed Job',
     ).toUpperCase();
 
-    final otherNameFromDoc = (currentUid == supporterId) ? _s(job['finderName']) : _s(job['supporterName']);
-    final otherImageFromDoc = (currentUid == supporterId) ? _s(job['finderImage']) : _s(job['supporterImage']);
-    final otherRoleFromDoc = (currentUid == supporterId) ? _s(job['finderRole']) : _s(job['supporterRole']);
+    final otherNameFromDoc = (currentUid == supporterId)
+        ? _s(job['finderName'])
+        : _s(job['supporterName']);
+    final otherImageFromDoc = (currentUid == supporterId)
+        ? _s(job['finderImage'])
+        : _s(job['supporterImage']);
+    final otherRoleFromDoc = (currentUid == supporterId)
+        ? _s(job['finderRole'])
+        : _s(job['supporterRole']);
 
-    final needsFetch = otherUserId.isNotEmpty &&
-        (otherNameFromDoc.isEmpty || otherImageFromDoc.isEmpty || otherImageFromDoc == 'null' || otherImageFromDoc.length < 10);
+    final needsFetch =
+        otherUserId.isNotEmpty &&
+        (otherNameFromDoc.isEmpty ||
+            otherImageFromDoc.isEmpty ||
+            otherImageFromDoc == 'null' ||
+            otherImageFromDoc.length < 10);
 
     return FutureBuilder<DocumentSnapshot?>(
       future: needsFetch
-          ? _db.collection('users').doc(otherUserId).get(const GetOptions(source: Source.serverAndCache))
+          ? _db
+                .collection('users')
+                .doc(otherUserId)
+                .get(const GetOptions(source: Source.serverAndCache))
           : null,
       builder: (context, snap) {
         String name = otherNameFromDoc.isNotEmpty ? otherNameFromDoc : 'User';
         String role = otherRoleFromDoc.isNotEmpty ? otherRoleFromDoc : 'Member';
         String imageUrl = otherImageFromDoc;
 
-        if (snap.connectionState == ConnectionState.done && snap.hasData && snap.data?.exists == true) {
+        if (snap.connectionState == ConnectionState.done &&
+            snap.hasData &&
+            snap.data?.exists == true) {
           final u = snap.data!.data() as Map<String, dynamic>? ?? {};
           name = _s(u['name'] ?? u['fullName'], name);
           role = _s(u['userRole'] ?? u['role'], role);
-          imageUrl = _s(u['profileImage'] ?? u['image'] ?? u['imageUrl'], imageUrl);
+          imageUrl = _s(
+            u['profileImage'] ?? u['image'] ?? u['imageUrl'],
+            imageUrl,
+          );
         }
 
-        if (imageUrl == 'null' || imageUrl == 'undefined' || imageUrl.length < 10) imageUrl = '';
+        if (imageUrl == 'null' ||
+            imageUrl == 'undefined' ||
+            imageUrl.length < 10)
+          imageUrl = '';
 
         if (needsFetch && snap.connectionState == ConnectionState.waiting) {
           return _buildLoadingCard(isDark);
@@ -210,7 +236,9 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             color: cardColor,
-            border: Border.all(color: isDark ? Colors.white10 : Colors.grey.shade200),
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.grey.shade200,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(isDark ? 0.3 : 0.04),
@@ -227,7 +255,10 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                 imageUrl: imageUrl,
                 role: role,
                 address: address,
-                rating: _asDouble(job['rating'], fallback: 0.0).toStringAsFixed(1),
+                rating: _asDouble(
+                  job['rating'],
+                  fallback: 0.0,
+                ).toStringAsFixed(1),
                 completed: _asInt(job['completedCount']).toString(),
                 reviews: _asInt(job['reviewsCount']).toString(),
                 price: price,
@@ -235,7 +266,9 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                 isVerifiedWorker: job['isVerified'] == true,
                 followersCount: _asInt(job['followersCount']),
                 margin: EdgeInsets.zero,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
                 showActionButtons: false,
                 showSaveButton: false,
                 showShareButton: false,
@@ -244,12 +277,15 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => UnifiedProfileScreen(uid: otherUserId, isOwner: false, showBack: true),
+                        builder: (_) => UnifiedProfileScreen(
+                          uid: otherUserId,
+                          isOwner: false,
+                          showBack: true,
+                        ),
                       ),
                     );
                   }
                 },
-                onChatTap: () => _connectAgain(context, otherUserId, name, role, imageUrl),
               ),
 
               // Job Info + 3-dot + Completed Badge
@@ -277,7 +313,12 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(
                                 _s(job['description']),
-                                style: TextStyle(fontSize: 13, color: isDark ? Colors.white70 : Colors.black54),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black54,
+                                ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -291,7 +332,10 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
@@ -299,7 +343,11 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.check_circle, color: Colors.green, size: 16),
+                              Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: 16,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 "Completed",
@@ -314,8 +362,15 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                         ),
                         const SizedBox(width: 8),
                         PopupMenuButton<String>(
-                          icon: Icon(Icons.more_vert, color: isDark ? Colors.white70 : Colors.grey.shade700),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          icon: Icon(
+                            Icons.more_vert,
+                            color: isDark
+                                ? Colors.white70
+                                : Colors.grey.shade700,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           onSelected: (value) async {
                             switch (value) {
                               case 'delete':
@@ -323,25 +378,44 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                                   context: context,
                                   builder: (ctx) => AlertDialog(
                                     title: const Text("Delete Job?"),
-                                    content: const Text("This action cannot be undone."),
+                                    content: const Text(
+                                      "This action cannot be undone.",
+                                    ),
                                     actions: [
-                                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
                                       TextButton(
-                                        onPressed: () => Navigator.pop(ctx, true),
-                                        child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, false),
+                                        child: const Text("Cancel"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(ctx, true),
+                                        child: const Text(
+                                          "Delete",
+                                          style: TextStyle(color: Colors.red),
+                                        ),
                                       ),
                                     ],
                                   ),
                                 );
                                 if (confirm == true) {
                                   try {
-                                    await _db.collection('completed_jobs').doc(jobId).delete();
+                                    await _db
+                                        .collection('completed_jobs')
+                                        .doc(jobId)
+                                        .delete();
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text("Job removed from completed list")),
+                                      const SnackBar(
+                                        content: Text(
+                                          "Job removed from completed list",
+                                        ),
+                                      ),
                                     );
                                   } catch (e) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text("Failed to delete: $e")),
+                                      SnackBar(
+                                        content: Text("Failed to delete: $e"),
+                                      ),
                                     );
                                   }
                                 }
@@ -366,9 +440,21 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                             }
                           },
                           itemBuilder: (context) => [
-                            const PopupMenuItem(value: 'delete', child: Text("Delete", style: TextStyle(color: Colors.red))),
-                            const PopupMenuItem(value: 'share', child: Text("Share")),
-                            const PopupMenuItem(value: 'report', child: Text("Report")),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text(
+                                "Delete",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 'share',
+                              child: Text("Share"),
+                            ),
+                            const PopupMenuItem(
+                              value: 'report',
+                              child: Text("Report"),
+                            ),
                           ],
                         ),
                       ],
@@ -377,7 +463,7 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                 ),
               ),
 
-              // Review + Connect buttons
+              // Review action
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                 child: Row(
@@ -393,23 +479,17 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                         icon: const Icon(Icons.rate_review_outlined, size: 18),
                         label: const Text("Review"),
                         style: OutlinedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          foregroundColor: isDark ? Colors.white70 : Colors.grey.shade700,
-                          side: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _connectAgain(context, otherUserId, name, role, imageUrl),
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text("Connect"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.brandMain,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          foregroundColor: isDark
+                              ? Colors.white70
+                              : Colors.grey.shade700,
+                          side: BorderSide(
+                            color: isDark
+                                ? Colors.white24
+                                : Colors.grey.shade300,
+                          ),
                         ),
                       ),
                     ),
@@ -425,11 +505,11 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
 
   // Review Dialog – Transaction fix
   Future<void> _showReviewDialog(
-      BuildContext context, {
-        required String jobId,
-        required String targetId,
-        required String targetName,
-      }) async {
+    BuildContext context, {
+    required String jobId,
+    required String targetId,
+    required String targetName,
+  }) async {
     final myUid = _auth.currentUser?.uid;
     if (myUid == null || targetId.isEmpty) {
       _showToast(context, "Cannot submit review", isError: true);
@@ -458,12 +538,21 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => AlertDialog(
           backgroundColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Row(
             children: [
               const Icon(Icons.star_rounded, color: Colors.amber),
               const SizedBox(width: 8),
-              Expanded(child: Text("Rate $targetName", style: TextStyle(color: isDark ? Colors.white : Colors.black87))),
+              Expanded(
+                child: Text(
+                  "Rate $targetName",
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ),
             ],
           ),
           content: Column(
@@ -471,21 +560,32 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (i) => GestureDetector(
-                  onTap: () => setModalState(() => rating = i + 1.0),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
-                      color: Colors.amber,
-                      size: i < rating ? 36 : 32,
+                children: List.generate(
+                  5,
+                  (i) => GestureDetector(
+                    onTap: () => setModalState(() => rating = i + 1.0),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        i < rating
+                            ? Icons.star_rounded
+                            : Icons.star_outline_rounded,
+                        color: Colors.amber,
+                        size: i < rating ? 36 : 32,
+                      ),
                     ),
                   ),
-                )),
+                ),
               ),
               const SizedBox(height: 8),
-              Text(_getRatingText(rating.toInt()), style: TextStyle(color: Colors.amber.shade700, fontWeight: FontWeight.bold)),
+              Text(
+                _getRatingText(rating.toInt()),
+                style: TextStyle(
+                  color: Colors.amber.shade700,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: controller,
@@ -494,22 +594,41 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
                 style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                 decoration: InputDecoration(
                   hintText: "Share your experience (optional)...",
-                  hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.white38 : Colors.black38,
+                  ),
                   filled: true,
                   fillColor: isDark ? Colors.white10 : Colors.grey.shade100,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  counterStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  counterStyle: TextStyle(
+                    color: isDark ? Colors.white38 : Colors.black38,
+                  ),
                 ),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text("Cancel", style: TextStyle(color: isDark ? Colors.white60 : Colors.grey))),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: isDark ? Colors.white60 : Colors.grey),
+              ),
+            ),
             ElevatedButton.icon(
               onPressed: () => Navigator.pop(ctx, true),
               icon: const Icon(Icons.send, size: 18),
               label: const Text("Submit"),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandMain, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandMain,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
           ],
         ),
@@ -533,7 +652,9 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
         final int oldCount = _asInt(stats['reviewsCount']);
         final double oldAvg = _asDouble(stats['avgRating']);
         final int newCount = oldCount + 1;
-        final double newAvg = oldCount == 0 ? rating : ((oldAvg * oldCount) + rating) / newCount;
+        final double newAvg = oldCount == 0
+            ? rating
+            : ((oldAvg * oldCount) + rating) / newCount;
 
         // 2. Now perform writes
         final reviewRef = _db.collection('reviews').doc();
@@ -572,7 +693,6 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
       }
     }
   }
-
 
   String _getRatingText(int rating) {
     switch (rating) {
@@ -620,47 +740,6 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
   // ✅ CONNECT AGAIN
   // ════════════════════════════════════════════════════════════════════════════
 
-  Future<void> _connectAgain(
-      BuildContext context,
-      String otherId,
-      String name,
-      String role,
-      String img,
-      ) async {
-    if (otherId.isEmpty) {
-      _showToast(context, "Cannot connect to this user", isError: true);
-      return;
-    }
-
-    HapticFeedback.lightImpact();
-
-    try {
-      final convId = await FirestoreChatService.getOrCreateConversation(
-        otherUserId: otherId,
-      );
-
-      if (!context.mounted) return;
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            conversationId: convId,
-            userName: name,
-            userRole: role,
-            userImage: img,
-          ),
-        ),
-      );
-    } catch (e) {
-      debugPrint('❌ Connect error: $e');
-      if (context.mounted) {
-        _showToast(context, "Connection failed. Please try again.",
-            isError: true);
-      }
-    }
-  }
-
   // ════════════════════════════════════════════════════════════════════════════
   // ✅ UI HELPERS
   // ════════════════════════════════════════════════════════════════════════════
@@ -694,7 +773,9 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-        border: Border.all(color: isDark ? Colors.white10 : Colors.grey.shade200),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey.shade200,
+        ),
       ),
       child: Row(
         children: [
@@ -762,9 +843,7 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
           const SizedBox(height: 16),
           Text(
             "Please login to see completed jobs",
-            style: TextStyle(
-              color: isDark ? Colors.white60 : Colors.black54,
-            ),
+            style: TextStyle(color: isDark ? Colors.white60 : Colors.black54),
           ),
           const SizedBox(height: 20),
           ElevatedButton.icon(
@@ -782,7 +861,8 @@ class _CompletedWorkTabState extends State<CompletedWorkTab> {
   }
 
   Widget _buildErrorState(String error, bool isDark) {
-    final isIndex = error.contains('FAILED_PRECONDITION') ||
+    final isIndex =
+        error.contains('FAILED_PRECONDITION') ||
         error.toLowerCase().contains('index');
 
     return Center(

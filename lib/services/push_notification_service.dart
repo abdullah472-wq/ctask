@@ -28,16 +28,15 @@ Future<void> _saveNotificationToFirestore(RemoteMessage message) async {
         .doc(userId)
         .collection('notifications')
         .add({
-      'title': message.notification?.title ?? 'New Notification',
-      'body': message.notification?.body ?? '',
-      'type': message.data['type'] ?? 'default',
-      'senderId': message.data['senderId'] ?? '',
-      'conversationId': message.data['conversationId'],
-      'postId': message.data['postId'],
-      'read': false,
-      'createdAt': FieldValue.serverTimestamp(),
-      'data': message.data,
-    });
+          'title': message.notification?.title ?? 'New Notification',
+          'body': message.notification?.body ?? '',
+          'type': message.data['type'] ?? 'default',
+          'senderId': message.data['senderId'] ?? '',
+          'postId': message.data['postId'],
+          'read': false,
+          'createdAt': FieldValue.serverTimestamp(),
+          'data': message.data,
+        });
 
     log("✅ Notification saved to Firestore");
   } catch (e) {
@@ -48,7 +47,7 @@ Future<void> _saveNotificationToFirestore(RemoteMessage message) async {
 class PushNotificationService {
   static final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotifications =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   // ✅ Navigation key for routing from notifications
   static GlobalKey<NavigatorState>? navigatorKey;
@@ -79,7 +78,8 @@ class PushNotificationService {
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         log('✅ User granted notification permission');
-      } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+      } else if (settings.authorizationStatus ==
+          AuthorizationStatus.provisional) {
         log('⚠️ User granted provisional permission');
       } else {
         log('❌ User declined or has not accepted permission');
@@ -93,7 +93,9 @@ class PushNotificationService {
       await _initializeLocalNotifications();
 
       // ✅ 4. Set background message handler
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
 
       // ✅ 5. Handle foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -107,7 +109,6 @@ class PushNotificationService {
         log("👆 Notification tapped (background): ${message.data}");
         _handleNotificationClick(message);
       });
-
 
       // ✅ 8. Get and save FCM token
       await _saveFCMToken();
@@ -140,7 +141,8 @@ class PushNotificationService {
 
     await _localNotifications
         .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
 
     log("✅ Notification channel created: $_channelId");
@@ -152,13 +154,14 @@ class PushNotificationService {
 
   static Future<void> _initializeLocalNotifications() async {
     const AndroidInitializationSettings androidSettings =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+    const DarwinInitializationSettings iosSettings =
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
@@ -191,24 +194,25 @@ class PushNotificationService {
     final payload = _buildPayload(message.data);
 
     // ✅ Android-specific details
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      _channelId,
-      _channelName,
-      channelDescription: _channelDescription,
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-      icon: '@mipmap/ic_launcher',
-      largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-      color: const Color(0xFF38B6FF),
-      ticker: title,
-      styleInformation: BigTextStyleInformation(
-        body,
-        contentTitle: title,
-        summaryText: 'FindUs',
-      ),
-    );
+    final AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          channelDescription: _channelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
+          icon: '@mipmap/ic_launcher',
+          largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+          color: const Color(0xFF38B6FF),
+          ticker: title,
+          styleInformation: BigTextStyleInformation(
+            body,
+            contentTitle: title,
+            summaryText: 'FindUs',
+          ),
+        );
 
     // ✅ iOS-specific details
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
@@ -261,9 +265,6 @@ class PushNotificationService {
 
   static String _getIdKey(String type) {
     switch (type) {
-      case 'message':
-      case 'chat':
-        return 'conversationId';
       case 'job':
       case 'post':
         return 'postId';
@@ -277,7 +278,7 @@ class PushNotificationService {
 
   static String _buildPayload(Map<String, dynamic> data) {
     final type = data['type']?.toString() ?? 'default';
-    final id = data['conversationId'] ?? data['postId'] ?? data['userId'] ?? '';
+    final id = data['postId'] ?? data['userId'] ?? '';
     return "$type|$id";
   }
 
@@ -293,16 +294,6 @@ class PushNotificationService {
     log("🔗 Navigating: $type → data: $data");
 
     switch (type) {
-      case 'message':
-      case 'chat':
-        final conversationId = data['conversationId']?.toString();
-        if (conversationId != null && conversationId.isNotEmpty) {
-          navigator.pushNamed('/chat', arguments: conversationId);
-        } else {
-          navigator.pushNamed('/notifications');
-        }
-        break;
-
       case 'job':
       case 'post':
         final postId = data['postId']?.toString();
@@ -382,9 +373,9 @@ class PushNotificationService {
     try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
-        await FirebaseFirestore.instance.collection('users').doc(userId).update({
-          'fcmToken': FieldValue.delete(),
-        });
+        await FirebaseFirestore.instance.collection('users').doc(userId).update(
+          {'fcmToken': FieldValue.delete()},
+        );
       }
       await _fcm.deleteToken();
       log("✅ FCM token deleted");
@@ -432,7 +423,9 @@ class PushNotificationService {
 
       // iOS badge update
       await _localNotifications
-          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
           ?.requestPermissions(badge: true);
 
       log("✅ Badge count set to: $count");
@@ -460,15 +453,16 @@ class PushNotificationService {
     String title = 'Test Notification',
     String body = 'This is a test notification from FindUs',
   }) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      _channelId,
-      _channelName,
-      channelDescription: _channelDescription,
-      importance: Importance.max,
-      priority: Priority.high,
-      playSound: true,
-      icon: '@mipmap/ic_launcher',
-    );
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          channelDescription: _channelDescription,
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+          icon: '@mipmap/ic_launcher',
+        );
 
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
       presentAlert: true,

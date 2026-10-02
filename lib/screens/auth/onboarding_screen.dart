@@ -20,19 +20,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _OnboardItem(
       title: "Find trusted local workers",
       description:
-      "Quickly find nearby workers for your daily needs — from cleaners, drivers, technicians to many more.",
+          "Quickly find nearby workers for your daily needs — from cleaners, drivers, technicians to many more.",
       lottieAsset: "assets/animations/world_map_pinging_and_searching.json",
-    ),
-    _OnboardItem(
-      title: "See workers around you",
-      description:
-      "View workers on map, compare prices, ratings and distance in a single screen.",
-      lottieAsset: "assets/animations/map_browsing.json",
     ),
     _OnboardItem(
       title: "Verified & rated by real users",
       description:
-      "Workers are verified and reviewed by real users, so you can hire with confidence.",
+          "Workers are verified and reviewed by real users, so you can hire with confidence.",
       lottieAsset: "assets/animations/job_hr.json",
     ),
   ];
@@ -40,9 +34,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _goToWelcome() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (_) => const WelcomeScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
     );
   }
 
@@ -115,7 +107,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Row(
                     children: List.generate(
                       _pages.length,
-                          (index) => _buildDot(isActive: index == _currentPage),
+                      (index) => _buildDot(isActive: index == _currentPage),
                     ),
                   ),
                   const Spacer(),
@@ -135,7 +127,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       shadowColor: AppColors.brandMain.withOpacity(0.4),
                     ),
                     child: Text(
-                      _currentPage == _pages.length - 1 ? "Get Started" : "Next",
+                      _currentPage == _pages.length - 1
+                          ? "Get Started"
+                          : "Next",
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -145,7 +139,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

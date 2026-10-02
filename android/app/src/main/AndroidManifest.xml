@@ -19,7 +19,7 @@
     <application
         android:name="android.app.Application"
         android:icon="@mipmap/ic_launcher"
-        android:label="FindUS">
+        android:label="Olpokaj">
 
         <activity
             android:name=".MainActivity"

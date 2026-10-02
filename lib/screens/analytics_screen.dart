@@ -1,4 +1,4 @@
-// lib/screens/ad_center/analytics_screen.dart
+// lib/screens/analytics_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -44,14 +44,25 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   // ✅ Combined Stream Builder - 3 Collections থেকে ডাটা নিচ্ছে
-  Widget _buildAnalyticsBody(bool isDark, Color cardColor, Color textColor, Color subTextColor) {
+  Widget _buildAnalyticsBody(
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+    Color subTextColor,
+  ) {
     return StreamBuilder<DocumentSnapshot>(
       // 1️⃣ Users Collection
-      stream: FirebaseFirestore.instance.collection('users').doc(_uid).snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(_uid)
+          .snapshots(),
       builder: (context, userSnapshot) {
         return StreamBuilder<DocumentSnapshot>(
           // 2️⃣ User Stats Collection
-          stream: FirebaseFirestore.instance.collection('user_stats').doc(_uid).snapshots(),
+          stream: FirebaseFirestore.instance
+              .collection('user_stats')
+              .doc(_uid)
+              .snapshots(),
           builder: (context, statsSnapshot) {
             return StreamBuilder<QuerySnapshot>(
               // 3️⃣ Completed Jobs Collection
@@ -65,7 +76,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 if (userSnapshot.connectionState == ConnectionState.waiting ||
                     statsSnapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(color: AppColors.brandMain),
+                    child: CircularProgressIndicator(
+                      color: AppColors.brandMain,
+                    ),
                   );
                 }
 
@@ -75,8 +88,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 }
 
                 // Extract Data
-                final userData = userSnapshot.data?.data() as Map<String, dynamic>? ?? {};
-                final userStats = statsSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+                final userData =
+                    userSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+                final userStats =
+                    statsSnapshot.data?.data() as Map<String, dynamic>? ?? {};
                 final jobDocs = jobSnapshot.data?.docs ?? [];
 
                 // Calculate Stats
@@ -85,7 +100,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 return Column(
                   children: [
                     // ১. স্ট্যাটস গ্রিড
-                    _buildStatsCards(stats, isDark, cardColor, textColor, subTextColor),
+                    _buildStatsCards(
+                      stats,
+                      isDark,
+                      cardColor,
+                      textColor,
+                      subTextColor,
+                    ),
 
                     const SizedBox(height: 25),
 
@@ -114,7 +135,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     const SizedBox(height: 25),
 
                     // ৪. পারফরম্যান্স মেট্রিক্স
-                    _buildPerformanceMetrics(stats, isDark, cardColor, textColor, subTextColor),
+                    _buildPerformanceMetrics(
+                      stats,
+                      isDark,
+                      cardColor,
+                      textColor,
+                      subTextColor,
+                    ),
 
                     const SizedBox(height: 50),
                   ],
@@ -129,10 +156,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   // ✅ Updated Calculation Logic - সব জায়গা থেকে ডাটা নিচ্ছে
   Map<String, dynamic> _calculateStats(
-      List<QueryDocumentSnapshot> jobDocs,
-      Map<String, dynamic> userData,
-      Map<String, dynamic> userStats,
-      ) {
+    List<QueryDocumentSnapshot> jobDocs,
+    Map<String, dynamic> userData,
+    Map<String, dynamic> userStats,
+  ) {
     double totalEarned = 0;
     int jobsCompleted = jobDocs.length;
     double totalRating = 0;
@@ -144,7 +171,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     // Initialize last 6 months
     final now = DateTime.now();
     for (int i = 5; i >= 0; i--) {
-      final month = DateFormat('MMM').format(DateTime(now.year, now.month - i, 1));
+      final month = DateFormat(
+        'MMM',
+      ).format(DateTime(now.year, now.month - i, 1));
       monthlyEarnings[month] = 0.0;
       monthlyJobs[month] = 0;
     }
@@ -154,7 +183,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       final data = doc.data() as Map<String, dynamic>;
 
       // ✅ Price extraction (handle both string and number)
-      final priceRaw = data['price'] ?? data['amount'] ?? data['offerPrice'] ?? 0;
+      final priceRaw =
+          data['price'] ?? data['amount'] ?? data['offerPrice'] ?? 0;
       double amount = _extractPrice(priceRaw);
 
       // ✅ Rating extraction
@@ -181,17 +211,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     }
 
     // ✅ Get Impressions from Posts (aggregated)
-    int totalImpressions = _toInt(userData['totalImpressions']) +
+    int totalImpressions =
+        _toInt(userData['totalImpressions']) +
         _toInt(userData['impressions']) +
         _toInt(userStats['totalImpressions']);
 
     // ✅ Profile Views
-    int profileViews = _toInt(userData['profileViews']) +
-        _toInt(userStats['profileViews']);
+    int profileViews =
+        _toInt(userData['profileViews']) + _toInt(userStats['profileViews']);
 
     // ✅ Jobs Completed from user_stats (fallback)
     if (jobsCompleted == 0) {
-      jobsCompleted = _toInt(userStats['jobsCompleted']) +
+      jobsCompleted =
+          _toInt(userStats['jobsCompleted']) +
           _toInt(userStats['hiresCompleted']);
     }
 
@@ -205,7 +237,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
     // ✅ Total earned from user_stats (fallback)
     if (totalEarned == 0) {
-      totalEarned = _toDouble(userStats['totalEarned']) +
+      totalEarned =
+          _toDouble(userStats['totalEarned']) +
           _toDouble(userStats['earnings']);
     }
 
@@ -252,13 +285,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   // --- Chart Section ---
   Widget _buildChartSection(
-      String title,
-      Map data,
-      bool isDark,
-      Color cardColor,
-      Color textColor, {
-        required bool isBarChart,
-      }) {
+    String title,
+    Map data,
+    bool isDark,
+    Color cardColor,
+    Color textColor, {
+    required bool isBarChart,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -282,18 +315,26 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 color: Colors.black.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: isBarChart
-              ? _buildBarChart(Map<String, double>.from(data), isDark, textColor)
+              ? _buildBarChart(
+                  Map<String, double>.from(data),
+                  isDark,
+                  textColor,
+                )
               : _buildLineChart(Map<String, int>.from(data), isDark, textColor),
         ),
       ],
     );
   }
 
-  Widget _buildBarChart(Map<String, double> data, bool isDark, Color textColor) {
+  Widget _buildBarChart(
+    Map<String, double> data,
+    bool isDark,
+    Color textColor,
+  ) {
     if (data.isEmpty || data.values.every((v) => v == 0)) {
       return Center(
         child: Column(
@@ -355,9 +396,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               },
             ),
           ),
-          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
         ),
         borderData: FlBorderData(show: false),
         gridData: const FlGridData(show: false),
@@ -424,9 +471,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               },
             ),
           ),
-          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
         ),
         borderData: FlBorderData(show: false),
         gridData: FlGridData(
@@ -443,12 +496,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   // --- Stats Cards ---
   Widget _buildStatsCards(
-      Map stats,
-      bool isDark,
-      Color cardColor,
-      Color textColor,
-      Color subTextColor,
-      ) {
+    Map stats,
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+    Color subTextColor,
+  ) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -516,14 +569,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Widget _statCard(
-      String title,
-      String value,
-      IconData icon,
-      Color color,
-      Color cardColor,
-      Color textColor,
-      Color subTextColor,
-      ) {
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+    Color cardColor,
+    Color textColor,
+    Color subTextColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -547,10 +600,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               color: textColor,
             ),
           ),
-          Text(
-            title,
-            style: TextStyle(fontSize: 12, color: subTextColor),
-          ),
+          Text(title, style: TextStyle(fontSize: 12, color: subTextColor)),
         ],
       ),
     );
@@ -558,12 +608,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   // --- Performance Metrics ---
   Widget _buildPerformanceMetrics(
-      Map stats,
-      bool isDark,
-      Color cardColor,
-      Color textColor,
-      Color subTextColor,
-      ) {
+    Map stats,
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+    Color subTextColor,
+  ) {
     // Calculate click rate
     final impressions = _toInt(stats['impressions']);
     final views = _toInt(stats['profileViews']);
@@ -619,7 +669,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  Widget _metricRow(String label, String val, Color textColor, Color subTextColor) {
+  Widget _metricRow(
+    String label,
+    String val,
+    Color textColor,
+    Color subTextColor,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(

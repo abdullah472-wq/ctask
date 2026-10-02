@@ -10,8 +10,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:findus_app/constants/app_colors.dart';
 import 'package:findus_app/models/worker_model.dart';
 import 'package:findus_app/screens/profile/unified_profile_screen.dart';
-import 'package:findus_app/screens/tabs/chat_screen.dart';
-import 'package:findus_app/services/firestore_chat_service.dart';
 import 'package:findus_app/widgets/floating_scaffold.dart';
 import 'package:findus_app/widgets/universal_worker_card.dart';
 import 'package:findus_app/screens/apply/apply_to_post_screen.dart';
@@ -23,10 +21,7 @@ import 'package:findus_app/badge/badge_service.dart';
 class WorkerJobDetailsScreen extends StatefulWidget {
   final Worker worker;
 
-  const WorkerJobDetailsScreen({
-    super.key,
-    required this.worker,
-  });
+  const WorkerJobDetailsScreen({super.key, required this.worker});
 
   @override
   State<WorkerJobDetailsScreen> createState() => _WorkerJobDetailsScreenState();
@@ -37,12 +32,10 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
   bool _isLoading = true;
   bool _hasApplied = false;
   bool _isOwner = false;
-  bool _isChatLoading = false;
   String? _errorMessage;
 
   // ✅ NEW: Owner profile image (fetched from Firestore)
   String _ownerProfileImage = '';
-  String _ownerName = '';
 
   @override
   void initState() {
@@ -125,21 +118,18 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
     try {
       // First try to get from post data
       if (_postData != null) {
-        _ownerProfileImage = (_postData!['ownerImage'] ??
-            _postData!['profileImage'] ??
-            _postData!['userImage'] ??
-            '').toString();
-
-        _ownerName = (_postData!['ownerName'] ??
-            widget.worker.name ??
-            '').toString();
+        _ownerProfileImage =
+            (_postData!['ownerImage'] ??
+                    _postData!['profileImage'] ??
+                    _postData!['userImage'] ??
+                    '')
+                .toString();
       }
 
       // If still no image, fetch from user document
       if (_ownerProfileImage.isEmpty ||
           _ownerProfileImage == 'null' ||
           _ownerProfileImage.length < 10) {
-
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(ownerId)
@@ -148,20 +138,13 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
         if (userDoc.exists) {
           final userData = userDoc.data() ?? {};
 
-          _ownerProfileImage = (userData['profileImage'] ??
-              userData['image'] ??
-              userData['photoUrl'] ??
-              userData['avatarUrl'] ??
-              '').toString();
-
-          // Also get owner name for chat
-          if (_ownerName.isEmpty) {
-            _ownerName = (userData['name'] ??
-                userData['displayName'] ??
-                userData['fullName'] ??
-                widget.worker.name ??
-                '').toString();
-          }
+          _ownerProfileImage =
+              (userData['profileImage'] ??
+                      userData['image'] ??
+                      userData['photoUrl'] ??
+                      userData['avatarUrl'] ??
+                      '')
+                  .toString();
         }
       }
 
@@ -210,10 +193,13 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
   // ════════════════════════════════════════════════════════════════════════════
   String get _postTitle {
     // Priority: roleLabel from post > roleKey > worker userRole
-    String title = (_postData?['roleLabel'] ??
-        _postData?['roleKey'] ??
-        widget.worker.userRole ??
-        'Worker').toString().toUpperCase();
+    String title =
+        (_postData?['roleLabel'] ??
+                _postData?['roleKey'] ??
+                widget.worker.userRole ??
+                'Worker')
+            .toString()
+            .toUpperCase();
 
     // Clean up if it's a key format (e.g., "electrician" -> "ELECTRICIAN")
     title = title.replaceAll('_', ' ').trim();
@@ -248,59 +234,10 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
     );
   }
 
-  Future<void> _openChat(BuildContext context) async {
-    if (widget.worker.uid.isEmpty) {
-      _showSnackBar("Cannot start chat");
-      return;
-    }
-
-    final currentUid = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUid == null) {
-      _showSnackBar("Please login to chat");
-      return;
-    }
-
-    if (currentUid == widget.worker.uid) {
-      _showSnackBar("You cannot chat with yourself");
-      return;
-    }
-
-    if (_isChatLoading) return;
-    setState(() => _isChatLoading = true);
-
-    try {
-      final cid = await FirestoreChatService.getOrCreateConversation(
-        otherUserId: widget.worker.uid,
-      );
-
-      if (!context.mounted) return;
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            conversationId: cid,
-            userName: _ownerName.isNotEmpty ? _ownerName : widget.worker.name, // ✅ Use fetched name
-            userRole: widget.worker.userRole,
-            userImage: _ownerProfileImage, // ✅ Use fetched image
-          ),
-        ),
-      );
-    } catch (e) {
-      debugPrint("Chat error: $e");
-      _showSnackBar("Failed to open chat");
-    } finally {
-      if (mounted) setState(() => _isChatLoading = false);
-    }
-  }
-
   void _showSnackBar(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
   }
 
@@ -309,10 +246,8 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
       context,
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => _FullScreenImageViewer(
-          images: images,
-          initialIndex: initialIndex,
-        ),
+        builder: (_) =>
+            _FullScreenImageViewer(images: images, initialIndex: initialIndex),
       ),
     );
   }
@@ -342,12 +277,7 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
                   ? _buildLoadingState()
                   : _errorMessage != null
                   ? _buildErrorState(textColor)
-                  : _buildContent(
-                isDark,
-                textColor,
-                cardColor,
-                subtitleColor,
-              ),
+                  : _buildContent(isDark, textColor, cardColor, subtitleColor),
             ),
 
             // Bottom Action Bar
@@ -377,11 +307,7 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 60,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.error_outline, size: 60, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
             _errorMessage ?? "Something went wrong",
@@ -399,10 +325,7 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.brandMain,
             ),
-            child: const Text(
-              "Retry",
-              style: TextStyle(color: Colors.white),
-            ),
+            child: const Text("Retry", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -410,11 +333,11 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
   }
 
   Widget _buildContent(
-      bool isDark,
-      Color textColor,
-      Color cardColor,
-      Color subtitleColor,
-      ) {
+    bool isDark,
+    Color textColor,
+    Color cardColor,
+    Color subtitleColor,
+  ) {
     // Data extraction
     final String title = _postData?['title'] ?? "${_roleLabel} Service";
     final String description =
@@ -423,8 +346,7 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
     final int slots = (_postData?['slots'] as num?)?.toInt() ?? 1;
     final int approvedCount =
         (_postData?['approvedCount'] as num?)?.toInt() ?? 0;
-    final String address =
-        _postData?['address'] ?? widget.worker.location;
+    final String address = _postData?['address'] ?? widget.worker.location;
     final String priceLabel =
         _postData?['priceLabel'] ?? widget.worker.priceText;
 
@@ -492,14 +414,14 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
             badgeLevel: _badgeLevel,
             isVerifiedWorker: widget.worker.kycCompleted,
             isTopRated: widget.worker.rating >= 4.8,
-            isTrusted: widget.worker.completedCount >= 50 &&
+            isTrusted:
+                widget.worker.completedCount >= 50 &&
                 widget.worker.rating >= 4.5,
             showActionButtons: true,
             primaryButtonText: "View Profile",
             onViewProfileTap: () => _navigateToProfile(context),
             showSaveButton: !_isOwner,
             showShareButton: true,
-            onChatTap: _isOwner ? null : () => _openChat(context),
           ),
 
           const SizedBox(height: 20),
@@ -671,11 +593,7 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
             ),
             child: Text(
               description,
-              style: TextStyle(
-                fontSize: 14,
-                color: subtitleColor,
-                height: 1.6,
-              ),
+              style: TextStyle(fontSize: 14, color: subtitleColor, height: 1.6),
             ),
           ),
 
@@ -774,7 +692,9 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
     }
 
     final encoded = Uri.encodeComponent(address);
-    final url = Uri.parse("https://www.google.com/maps/search/?api=1&query=$encoded");
+    final url = Uri.parse(
+      "https://www.google.com/maps/search/?api=1&query=$encoded",
+    );
 
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -797,13 +717,13 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
 
   bool _isVideo(String url) =>
       url.toLowerCase().endsWith('.mp4') ||
-          url.toLowerCase().endsWith('.mov') ||
-          url.toLowerCase().endsWith('.webm');
+      url.toLowerCase().endsWith('.mov') ||
+      url.toLowerCase().endsWith('.webm');
 
   bool _isAudio(String url) =>
       url.toLowerCase().endsWith('.mp3') ||
-          url.toLowerCase().endsWith('.wav') ||
-          url.toLowerCase().endsWith('.m4a');
+      url.toLowerCase().endsWith('.wav') ||
+      url.toLowerCase().endsWith('.m4a');
 
   Widget _buildMediaGrid(List<dynamic> urls, Color cardColor, bool isDark) {
     final imageUrls = urls
@@ -953,54 +873,24 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
         top: false,
         child: Row(
           children: [
-            // Chat Button
-            if (!_isOwner)
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isChatLoading ? null : () => _openChat(context),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.brandMain),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    minimumSize: const Size.fromHeight(50),
-                    backgroundColor: isDark ? Colors.transparent : Colors.white,
-                    foregroundColor: AppColors.brandMain,
-                  ),
-                  icon: _isChatLoading
-                      ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                      : const Icon(Icons.chat_bubble_outline),
-                  label: const Text(
-                    "CHAT",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                ),
-              ),
-
-            if (!_isOwner) const SizedBox(width: 12),
-
             // Apply Button
             Expanded(
               flex: _isOwner ? 1 : 1,
               child: ElevatedButton(
                 onPressed: canApply
                     ? () {
-                  final postId = widget.worker.postId.toString().trim();
-                  if (postId.isEmpty) {
-                    _showSnackBar("Post ID not found.");
-                    return;
-                  }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ApplyToPostScreen(postId: postId),
-                    ),
-                  ).then((_) => _checkIfAlreadyApplied());
-                }
+                        final postId = widget.worker.postId.toString().trim();
+                        if (postId.isEmpty) {
+                          _showSnackBar("Post ID not found.");
+                          return;
+                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ApplyToPostScreen(postId: postId),
+                          ),
+                        ).then((_) => _checkIfAlreadyApplied());
+                      }
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: canApply
@@ -1016,8 +906,8 @@ class _WorkerJobDetailsScreenState extends State<WorkerJobDetailsScreen> {
                   _isOwner
                       ? "YOUR POST"
                       : (_hasApplied
-                      ? "APPLIED ✓"
-                      : (isFull ? "SLOTS FULL" : "APPLY NOW")),
+                            ? "APPLIED ✓"
+                            : (isFull ? "SLOTS FULL" : "APPLY NOW")),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -1040,10 +930,7 @@ class _FullScreenImageViewer extends StatefulWidget {
   final List<String> images;
   final int initialIndex;
 
-  const _FullScreenImageViewer({
-    required this.images,
-    this.initialIndex = 0,
-  });
+  const _FullScreenImageViewer({required this.images, this.initialIndex = 0});
 
   @override
   State<_FullScreenImageViewer> createState() => _FullScreenImageViewerState();
@@ -1091,9 +978,8 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
               child: CachedNetworkImage(
                 imageUrl: widget.images[index],
                 fit: BoxFit.contain,
-                placeholder: (_, __) => const CircularProgressIndicator(
-                  color: Colors.white,
-                ),
+                placeholder: (_, __) =>
+                    const CircularProgressIndicator(color: Colors.white),
                 errorWidget: (_, __, ___) => const Icon(
                   Icons.broken_image,
                   color: Colors.white,

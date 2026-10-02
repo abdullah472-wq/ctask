@@ -53,8 +53,9 @@ class _AchievementsTabState extends State<AchievementsTab> {
   @override
   void initState() {
     super.initState();
-    _confettiController =
-        ConfettiController(duration: const Duration(seconds: 2));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 2),
+    );
 
     _badgeListener = () {
       if (!mounted) return;
@@ -74,8 +75,9 @@ class _AchievementsTabState extends State<AchievementsTab> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final userRef =
-    FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final userRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid);
 
     try {
       final doc = await userRef.get();
@@ -90,7 +92,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
       // 1 week = 604,800,000 ms
       // Thursday → Saturday offset = 2 days = 172,800,000 ms
       final int currentWeekId =
-      ((now.millisecondsSinceEpoch + 172800000) / 604800000).floor();
+          ((now.millisecondsSinceEpoch + 172800000) / 604800000).floor();
 
       final int lastSavedWeekId = data['last_week_id'] ?? 0;
 
@@ -101,8 +103,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
           'weekly_quest_claimed': false,
         });
         // ignore: avoid_print
-        print(
-            "Weekly progress reset successful. New Week ID: $currentWeekId");
+        print("Weekly progress reset successful. New Week ID: $currentWeekId");
       }
     } catch (e) {
       // ignore: avoid_print
@@ -159,40 +160,44 @@ class _AchievementsTabState extends State<AchievementsTab> {
         .collection('users')
         .doc(uid)
         .snapshots()
-        .listen((snap) {
-      if (!snap.exists) return;
+        .listen(
+          (snap) {
+            if (!snap.exists) return;
 
-      final data = snap.data() ?? {};
-      final plan =
-      (data['subscription_plan'] ?? 'free').toString().toLowerCase();
-      final bool isProUser = plan == 'pro' || plan == 'business';
-      final teamId = data['team_id'];
-      final bool hasTeam =
-          teamId != null && teamId.toString().isNotEmpty;
-      final firebaseRole =
-      (data['userRole'] ?? _userRole).toString().toLowerCase();
-      final bool isWorker =
-      (firebaseRole == 'finder' || firebaseRole == 'worker');
+            final data = snap.data() ?? {};
+            final plan = (data['subscription_plan'] ?? 'free')
+                .toString()
+                .toLowerCase();
+            final bool isProUser = plan == 'pro' || plan == 'business';
+            final teamId = data['team_id'];
+            final bool hasTeam = teamId != null && teamId.toString().isNotEmpty;
+            final firebaseRole = (data['userRole'] ?? _userRole)
+                .toString()
+                .toLowerCase();
+            final bool isWorker =
+                (firebaseRole == 'finder' || firebaseRole == 'worker');
 
-      final rawXp = data['xpPoints'] ?? 0;
-      final int xp = rawXp is num
-          ? rawXp.toInt()
-          : int.tryParse(rawXp.toString()) ?? 0;
-      BadgeService.setPointsFromServer(xp);
+            final rawXp = data['xpPoints'] ?? 0;
+            final int xp = rawXp is num
+                ? rawXp.toInt()
+                : int.tryParse(rawXp.toString()) ?? 0;
+            BadgeService.setPointsFromServer(xp);
 
-      if (mounted) {
-        setState(() {
-          _isPro = isProUser;
-          _hasTeam = hasTeam;
-          _userRole = firebaseRole;
-          _isWorker = isWorker;
-          _isLoading = false;
-        });
-        _updateStats();
-      }
-    }, onError: (error) {
-      if (mounted) setState(() => _isLoading = false);
-    });
+            if (mounted) {
+              setState(() {
+                _isPro = isProUser;
+                _hasTeam = hasTeam;
+                _userRole = firebaseRole;
+                _isWorker = isWorker;
+                _isLoading = false;
+              });
+              _updateStats();
+            }
+          },
+          onError: (error) {
+            if (mounted) setState(() => _isLoading = false);
+          },
+        );
   }
 
   void _updateStats() {
@@ -310,8 +315,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor =
-    isDark ? const Color(0xFF1A1A1A) : AppColors.bgBlue;
+    final bgColor = isDark ? const Color(0xFF1A1A1A) : AppColors.bgBlue;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -331,9 +335,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
                 const SizedBox(height: 8),
                 _buildFilterChips(isDark),
                 const SizedBox(height: 8),
-                Expanded(
-                  child: _buildQuestList(isDark),
-                ),
+                Expanded(child: _buildQuestList(isDark)),
               ],
             ),
 
@@ -364,9 +366,11 @@ class _AchievementsTabState extends State<AchievementsTab> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.emoji_events_outlined,
-              size: 80,
-              color: isDark ? Colors.white54 : Colors.grey),
+          Icon(
+            Icons.emoji_events_outlined,
+            size: 80,
+            color: isDark ? Colors.white54 : Colors.grey,
+          ),
           const SizedBox(height: 20),
           Text(
             "No Quests Found",
@@ -396,24 +400,19 @@ class _AchievementsTabState extends State<AchievementsTab> {
     final badgeName = stats.badgeName.toUpperCase();
     final badgeColor = stats.badgeColor;
     final totalStars = stats.totalStars;
-    final starsNeeded =
-    _getNextStarThreshold(stats.badgeLevel);
+    final starsNeeded = _getNextStarThreshold(stats.badgeLevel);
 
     final currentLevel = stats.numericLevel;
     final currentXP = stats.totalXP;
 
-    final xpProgress =
-    _calculateLevelProgress(currentLevel, currentXP);
+    final xpProgress = _calculateLevelProgress(currentLevel, currentXP);
     final nextLevelXP = _getXPForLevel(currentLevel + 1);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.brandMain.withOpacity(0.9),
-            AppColors.brandDark
-          ],
+          colors: [AppColors.brandMain.withOpacity(0.9), AppColors.brandDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -427,8 +426,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
         child: Column(
           children: [
             Row(
-              mainAxisAlignment:
-              MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   "ACHIEVEMENTS",
@@ -440,8 +438,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.info_outline,
-                      color: Colors.white),
+                  icon: const Icon(Icons.info_outline, color: Colors.white),
                   onPressed: _showInfoDialog,
                 ),
               ],
@@ -452,8 +449,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                    color: Colors.white.withOpacity(0.2)),
+                border: Border.all(color: Colors.white.withOpacity(0.2)),
               ),
               child: Column(
                 children: [
@@ -465,8 +461,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
                         decoration: BoxDecoration(
                           color: badgeColor.withOpacity(0.2),
                           shape: BoxShape.circle,
-                          border: Border.all(
-                              color: badgeColor, width: 2),
+                          border: Border.all(color: badgeColor, width: 2),
                         ),
                         child: Icon(
                           Icons.workspace_premium,
@@ -477,15 +472,13 @@ class _AchievementsTabState extends State<AchievementsTab> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               "CURRENT RANK",
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Colors.white
-                                    .withOpacity(0.7),
+                                color: Colors.white.withOpacity(0.7),
                                 letterSpacing: 1,
                               ),
                             ),
@@ -493,33 +486,27 @@ class _AchievementsTabState extends State<AchievementsTab> {
                               badgeName,
                               style: TextStyle(
                                 fontSize: 20,
-                                fontWeight:
-                                FontWeight.w900,
+                                fontWeight: FontWeight.w900,
                                 color: badgeColor,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Row(
-                              mainAxisAlignment:
-                              MainAxisAlignment
-                                  .spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   "${totalStars.toStringAsFixed(0)} Stars",
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontWeight:
-                                    FontWeight.bold,
+                                    fontWeight: FontWeight.bold,
                                     fontSize: 12,
                                   ),
                                 ),
-                                if (stats.badgeLevel !=
-                                    BadgeLevel.diamond)
+                                if (stats.badgeLevel != BadgeLevel.diamond)
                                   Text(
                                     "/ ${starsNeeded.toStringAsFixed(0)}",
                                     style: TextStyle(
-                                      color: Colors.white
-                                          .withOpacity(0.6),
+                                      color: Colors.white.withOpacity(0.6),
                                       fontSize: 12,
                                     ),
                                   ),
@@ -532,43 +519,29 @@ class _AchievementsTabState extends State<AchievementsTab> {
                   ),
                   const SizedBox(height: 10),
                   ClipRRect(
-                    borderRadius:
-                    BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(6),
                     child: LinearProgressIndicator(
                       value: stats.badgeProgressPercent,
                       minHeight: 8,
                       backgroundColor: Colors.black12,
-                      valueColor:
-                      AlwaysStoppedAnimation(
-                        badgeColor,
-                      ),
+                      valueColor: AlwaysStoppedAnimation(badgeColor),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Divider(
-                    color:
-                    Colors.white.withOpacity(0.15),
-                    height: 1,
-                  ),
+                  Divider(color: Colors.white.withOpacity(0.15), height: 1),
                   const SizedBox(height: 16),
                   Row(
-                    mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
-                          const Icon(
-                            Icons.bolt,
-                            color: Colors.amber,
-                            size: 18,
-                          ),
+                          const Icon(Icons.bolt, color: Colors.amber, size: 18),
                           const SizedBox(width: 6),
                           Text(
                             "LEVEL $currentLevel",
                             style: const TextStyle(
                               color: Colors.white,
-                              fontWeight:
-                              FontWeight.w800,
+                              fontWeight: FontWeight.w800,
                               fontSize: 15,
                             ),
                           ),
@@ -577,8 +550,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
                       Text(
                         "${(xpProgress * 100).toStringAsFixed(0)}%",
                         style: TextStyle(
-                          color: Colors.white
-                              .withOpacity(0.8),
+                          color: Colors.white.withOpacity(0.8),
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -592,25 +564,18 @@ class _AchievementsTabState extends State<AchievementsTab> {
                         height: 18,
                         decoration: BoxDecoration(
                           color: Colors.black26,
-                          borderRadius:
-                          BorderRadius.circular(9),
+                          borderRadius: BorderRadius.circular(9),
                         ),
                       ),
                       FractionallySizedBox(
-                        widthFactor:
-                        xpProgress.clamp(0.0, 1.0),
+                        widthFactor: xpProgress.clamp(0.0, 1.0),
                         child: Container(
                           height: 18,
                           decoration: BoxDecoration(
-                            gradient:
-                            const LinearGradient(
-                              colors: [
-                                Colors.orange,
-                                Colors.amber,
-                              ],
+                            gradient: const LinearGradient(
+                              colors: [Colors.orange, Colors.amber],
                             ),
-                            borderRadius:
-                            BorderRadius.circular(9),
+                            borderRadius: BorderRadius.circular(9),
                           ),
                         ),
                       ),
@@ -659,29 +624,23 @@ class _AchievementsTabState extends State<AchievementsTab> {
     return (44 * (level - 1) * (level - 1)).toInt();
   }
 
-  double _calculateLevelProgress(
-      int currentLevel, int currentXP) {
+  double _calculateLevelProgress(int currentLevel, int currentXP) {
     int startXP = _getXPForLevel(currentLevel);
     int nextXP = _getXPForLevel(currentLevel + 1);
     if (nextXP <= startXP) return 1.0;
-    return ((currentXP - startXP) /
-        (nextXP - startXP))
-        .clamp(0.0, 1.0);
+    return ((currentXP - startXP) / (nextXP - startXP)).clamp(0.0, 1.0);
   }
 
   Widget _buildToggle(bool isDark) {
     return Padding(
-      padding:
-      const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: isDark ? Colors.white10 : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isDark
-                ? Colors.white10
-                : Colors.grey.shade200,
+            color: isDark ? Colors.white10 : Colors.grey.shade200,
           ),
         ),
         child: Row(
@@ -691,7 +650,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
                 "Active",
                 !_showCompleted,
                 isDark,
-                    () => setState(() => _showCompleted = false),
+                () => setState(() => _showCompleted = false),
               ),
             ),
             Expanded(
@@ -699,7 +658,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
                 "Completed",
                 _showCompleted,
                 isDark,
-                    () => setState(() => _showCompleted = true),
+                () => setState(() => _showCompleted = true),
               ),
             ),
           ],
@@ -708,19 +667,20 @@ class _AchievementsTabState extends State<AchievementsTab> {
     );
   }
 
-  Widget _toggleButton(String text, bool isActive,
-      bool isDark, VoidCallback onTap) {
+  Widget _toggleButton(
+    String text,
+    bool isActive,
+    bool isDark,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding:
-        const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isActive
-              ? AppColors.brandMain
-              : Colors.transparent,
+          color: isActive ? AppColors.brandMain : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
@@ -730,9 +690,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
             fontSize: 12,
             color: isActive
                 ? Colors.white
-                : (isDark
-                ? Colors.white70
-                : Colors.black54),
+                : (isDark ? Colors.white70 : Colors.black54),
           ),
         ),
       ),
@@ -749,8 +707,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding:
-      const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
           _filterChip('all', 'All', bg, fg),
@@ -766,17 +723,14 @@ class _AchievementsTabState extends State<AchievementsTab> {
   }
 
   Widget _filterChip(
-      String key,
-      String label,
-      Color Function(String) bg,
-      Color Function(String) fg,
-      ) {
+    String key,
+    String label,
+    Color Function(String) bg,
+    Color Function(String) fg,
+  ) {
     final selected = _currentFilter == key;
     return ChoiceChip(
-      label: Text(
-        label,
-        style: TextStyle(color: fg(key), fontSize: 12),
-      ),
+      label: Text(label, style: TextStyle(color: fg(key), fontSize: 12)),
       selected: selected,
       selectedColor: AppColors.brandMain,
       backgroundColor: bg(key),
@@ -795,29 +749,29 @@ class _AchievementsTabState extends State<AchievementsTab> {
   _PeriodMeta _periodMeta(ResetPeriod p) {
     switch (p) {
       case ResetPeriod.daily:
-        return const _PeriodMeta(
-            Icons.wb_sunny, Colors.orange, 'Daily');
+        return const _PeriodMeta(Icons.wb_sunny, Colors.orange, 'Daily');
       case ResetPeriod.weekly:
         return const _PeriodMeta(
-            Icons.calendar_view_week,
-            Colors.purple,
-            'Weekly');
+          Icons.calendar_view_week,
+          Colors.purple,
+          'Weekly',
+        );
       case ResetPeriod.monthly:
-        return const _PeriodMeta(
-            Icons.calendar_today, Colors.teal, 'Monthly');
+        return const _PeriodMeta(Icons.calendar_today, Colors.teal, 'Monthly');
       case ResetPeriod.none:
       default:
-        return const _PeriodMeta(Icons.all_inclusive,
-            Colors.blueGrey, 'Long‑term');
+        return const _PeriodMeta(
+          Icons.all_inclusive,
+          Colors.blueGrey,
+          'Long‑term',
+        );
     }
   }
 
-  Widget _smallChip(
-      String text, Color color, bool isDark) {
+  Widget _smallChip(String text, Color color, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(right: 4),
-      padding: const EdgeInsets.symmetric(
-          horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: color.withOpacity(isDark ? 0.2 : 0.12),
         borderRadius: BorderRadius.circular(999),
@@ -834,11 +788,9 @@ class _AchievementsTabState extends State<AchievementsTab> {
     );
   }
 
-  Widget _buildQuestSideStatus(
-      AchievementState st, bool canClaim) {
+  Widget _buildQuestSideStatus(AchievementState st, bool canClaim) {
     if (st.claimed) {
-      return const Icon(Icons.emoji_events,
-          size: 22, color: Colors.amber);
+      return const Icon(Icons.emoji_events, size: 22, color: Colors.amber);
     }
 
     if (canClaim) {
@@ -851,19 +803,14 @@ class _AchievementsTabState extends State<AchievementsTab> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               child: const Text(
                 'CLAIM',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -873,41 +820,29 @@ class _AchievementsTabState extends State<AchievementsTab> {
 
     return Column(
       children: const [
-        Icon(Icons.hourglass_empty,
-            size: 20, color: Colors.grey),
+        Icon(Icons.hourglass_empty, size: 20, color: Colors.grey),
         SizedBox(height: 4),
-        Text(
-          'ACTIVE',
-          style:
-          TextStyle(fontSize: 9, color: Colors.grey),
-        ),
+        Text('ACTIVE', style: TextStyle(fontSize: 9, color: Colors.grey)),
       ],
     );
   }
 
-  Widget _buildQuestCard(
-      AchievementState st, bool isDark) {
+  Widget _buildQuestCard(AchievementState st, bool isDark) {
     if (st.isLocked) return _buildLockedCard(st, isDark);
 
     final def = st.def;
     final canClaim = st.isCompleted && !st.claimed;
     final progress = st.progress.clamp(0, def.target);
-    final pct =
-    def.target == 0 ? 0.0 : progress / def.target;
+    final pct = def.target == 0 ? 0.0 : progress / def.target;
 
     final meta = _periodMeta(def.resetPeriod);
 
-    final bgColor =
-    isDark ? const Color(0xFF2C2C2C) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF2C2C2C) : Colors.white;
     final borderColor = canClaim
         ? Colors.green
-        : (isDark
-        ? Colors.white10
-        : Colors.grey.shade200);
-    final textColor =
-    isDark ? Colors.white : Colors.black87;
-    final subColor =
-    isDark ? Colors.white70 : Colors.black54;
+        : (isDark ? Colors.white10 : Colors.grey.shade200);
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subColor = isDark ? Colors.white70 : Colors.black54;
 
     return InkWell(
       onTap: () {
@@ -923,14 +858,10 @@ class _AchievementsTabState extends State<AchievementsTab> {
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: borderColor,
-            width: canClaim ? 1.5 : 1,
-          ),
+          border: Border.all(color: borderColor, width: canClaim ? 1.5 : 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black
-                  .withOpacity(isDark ? 0.2 : 0.05),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -945,19 +876,16 @@ class _AchievementsTabState extends State<AchievementsTab> {
               height: 36,
               decoration: BoxDecoration(
                 color: meta.color.withOpacity(0.12),
-                borderRadius:
-                BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(meta.icon,
-                  color: meta.color, size: 20),
+              child: Icon(meta.icon, color: meta.color, size: 20),
             ),
             const SizedBox(width: 10),
 
             // Middle content
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Title + XP pill
                   Row(
@@ -966,14 +894,12 @@ class _AchievementsTabState extends State<AchievementsTab> {
                         child: Text(
                           def.title,
                           style: TextStyle(
-                            fontWeight:
-                            FontWeight.w700,
+                            fontWeight: FontWeight.w700,
                             fontSize: 14,
                             color: textColor,
                           ),
                           maxLines: 1,
-                          overflow: TextOverflow
-                              .ellipsis,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -983,39 +909,26 @@ class _AchievementsTabState extends State<AchievementsTab> {
                   const SizedBox(height: 4),
                   Text(
                     def.description,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: subColor,
-                    ),
+                    style: TextStyle(fontSize: 12, color: subColor),
                     maxLines: 2,
-                    overflow:
-                    TextOverflow.ellipsis,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
 
                   if (!st.claimed)
                     Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ClipRRect(
-                          borderRadius:
-                          BorderRadius.circular(
-                              999),
-                          child:
-                          LinearProgressIndicator(
+                          borderRadius: BorderRadius.circular(999),
+                          child: LinearProgressIndicator(
                             value: pct,
                             minHeight: 6,
                             backgroundColor: isDark
                                 ? Colors.white10
-                                : Colors
-                                .grey.shade200,
-                            valueColor:
-                            AlwaysStoppedAnimation(
-                              canClaim
-                                  ? Colors.green
-                                  : AppColors
-                                  .brandMain,
+                                : Colors.grey.shade200,
+                            valueColor: AlwaysStoppedAnimation(
+                              canClaim ? Colors.green : AppColors.brandMain,
                             ),
                           ),
                         ),
@@ -1027,61 +940,40 @@ class _AchievementsTabState extends State<AchievementsTab> {
                               style: TextStyle(
                                 fontSize: 11,
                                 color: subColor,
-                                fontWeight:
-                                FontWeight.w500,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(width: 8),
-                            _smallChip(
-                                meta.label,
-                                meta.color,
-                                isDark),
+                            _smallChip(meta.label, meta.color, isDark),
                             if (def.workerOnly)
-                              _smallChip(
-                                  'Worker',
-                                  Colors.green,
-                                  isDark),
+                              _smallChip('Worker', Colors.green, isDark),
                             if (def.supporterOnly)
-                              _smallChip(
-                                  'Employer',
-                                  Colors.red,
-                                  isDark),
+                              _smallChip('Employer', Colors.red, isDark),
                             if (def.proOnly)
-                              _smallChip(
-                                  'Pro',
-                                  Colors
-                                      .deepPurple,
-                                  isDark),
+                              _smallChip('Pro', Colors.deepPurple, isDark),
                           ],
                         ),
                       ],
                     )
                   else
                     Padding(
-                      padding:
-                      const EdgeInsets.only(
-                          top: 4),
+                      padding: const EdgeInsets.only(top: 4),
                       child: Row(
                         children: [
-                          _smallChip(meta.label,
-                              meta.color, isDark),
-                          const SizedBox(
-                              width: 4),
+                          _smallChip(meta.label, meta.color, isDark),
+                          const SizedBox(width: 4),
                           const Icon(
                             Icons.check_circle,
                             size: 16,
                             color: Colors.green,
                           ),
-                          const SizedBox(
-                              width: 4),
+                          const SizedBox(width: 4),
                           Text(
                             'Claimed',
                             style: TextStyle(
                               fontSize: 11,
-                              color: Colors.green
-                                  .shade400,
-                              fontWeight:
-                              FontWeight.w600,
+                              color: Colors.green.shade400,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -1105,14 +997,14 @@ class _AchievementsTabState extends State<AchievementsTab> {
   // LOCKED / XP PILL / EMPTY
   // ─────────────────────────────────────────────────────────────
 
-  Widget _buildLockedCard(
-      AchievementState st, bool isDark) {
+  Widget _buildLockedCard(AchievementState st, bool isDark) {
     return GestureDetector(
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                "Upgrade to PRO to unlock this quest & earn massive XP!"),
+              "Upgrade to PRO to unlock this quest & earn massive XP!",
+            ),
             backgroundColor: Colors.amber,
           ),
         );
@@ -1121,34 +1013,24 @@ class _AchievementsTabState extends State<AchievementsTab> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white10
-              : Colors.grey.shade100,
+          color: isDark ? Colors.white10 : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.grey.withOpacity(0.3),
-          ),
+          border: Border.all(color: Colors.grey.withOpacity(0.3)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color:
-                Colors.grey.withOpacity(0.2),
+                color: Colors.grey.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.lock,
-                color: Colors.grey,
-                size: 20,
-              ),
+              child: const Icon(Icons.lock, color: Colors.grey, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     st.def.title,
@@ -1159,10 +1041,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
                   ),
                   const Text(
                     "Pro Plan Exclusive",
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 11,
-                    ),
+                    style: TextStyle(color: Colors.grey, fontSize: 11),
                   ),
                 ],
               ),
@@ -1177,14 +1056,11 @@ class _AchievementsTabState extends State<AchievementsTab> {
   Widget _xpPill(int xp, {bool isLocked = false}) {
     final color = isLocked ? Colors.grey : Colors.amber;
     return Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: color.withOpacity(0.25),
-        ),
+        border: Border.all(color: color.withOpacity(0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1206,8 +1082,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
 
   Widget _buildEmptyBox(bool isDark, String msg) {
     return Padding(
-      padding:
-      const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(18),
@@ -1215,17 +1090,12 @@ class _AchievementsTabState extends State<AchievementsTab> {
           color: isDark ? Colors.white10 : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark
-                ? Colors.white10
-                : Colors.grey.shade200,
+            color: isDark ? Colors.white10 : Colors.grey.shade200,
           ),
         ),
         child: Text(
           msg,
-          style: TextStyle(
-            color:
-            isDark ? Colors.white70 : Colors.black54,
-          ),
+          style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
         ),
       ),
     );
@@ -1246,12 +1116,8 @@ class _AchievementsTabState extends State<AchievementsTab> {
     if (st.def.resetPeriod == ResetPeriod.daily) {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .update({
-          'weekly_quest_progress':
-          FieldValue.increment(1),
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'weekly_quest_progress': FieldValue.increment(1),
         });
       }
     }
@@ -1265,19 +1131,13 @@ class _AchievementsTabState extends State<AchievementsTab> {
 
     final key = id.toLowerCase();
 
-    if (key.contains('login') ||
-        key.contains('check')) {
-      await AchievementService.incrementProgress(
-          'daily_login',
-          amount: 1);
-      await AchievementService
-          .syncWeeklyChestFromServer();
+    if (key.contains('login') || key.contains('check')) {
+      await AchievementService.incrementProgress('daily_login', amount: 1);
+      await AchievementService.syncWeeklyChestFromServer();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Checked in!"),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Checked in!")));
         setState(() {});
       }
       return;
@@ -1288,44 +1148,25 @@ class _AchievementsTabState extends State<AchievementsTab> {
       return;
     }
 
-    if (key.contains('explore') ||
-        key.contains('map')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Opening Map..."),
-        ),
-      );
-      await AchievementService.incrementProgress(
-          'daily_explore',
-          amount: 1);
-      if (mounted) setState(() {});
-      return;
-    }
-
     if (key.contains('portfolio') ||
         key.contains('cv') ||
         key.contains('upload')) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => WorkerDocumentsScreen(
-            uid: uid,
-            isOwner: true,
-          ),
+          builder: (_) => WorkerDocumentsScreen(uid: uid, isOwner: true),
         ),
       );
       return;
     }
 
-    if ((key.contains('job') ||
-        key.contains('post')) &&
+    if ((key.contains('job') || key.contains('post')) &&
         !key.contains('view')) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => _isWorker
-              ? const EarnPostScreen()
-              : const SupportPostScreen(),
+          builder: (_) =>
+              _isWorker ? const EarnPostScreen() : const SupportPostScreen(),
         ),
       );
       return;
@@ -1333,22 +1174,16 @@ class _AchievementsTabState extends State<AchievementsTab> {
 
     if (key.contains('profile')) {
       Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                UnifiedProfileEditScreen(uid: uid),
-          ),
+        context,
+        MaterialPageRoute(builder: (_) => UnifiedProfileEditScreen(uid: uid)),
       );
-          return;
-      }
-
-          ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              "Action not available from here."),
-        ),
-      );
+      return;
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Action not available from here.")),
+    );
+  }
 
   void _showInfoDialog() {
     final stats = BadgeService.badgeNotifier.value;
@@ -1366,7 +1201,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
     switch (badgeLevel) {
       case BadgeLevel.newbie:
         nextBadgeName = 'Bronze';
-        nextBadgeStars = 100;   // 100 stars থেকে Bronze
+        nextBadgeStars = 100; // 100 stars থেকে Bronze
         break;
       case BadgeLevel.bronze:
         nextBadgeName = 'Silver';
@@ -1407,53 +1242,44 @@ class _AchievementsTabState extends State<AchievementsTab> {
             children: [
               const Text(
                 "How quests work:",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
               const SizedBox(height: 4),
               const Text(
                 "• Daily quests: প্রতিদিন reset হয়।\n"
-                    "• Weekly quests: পুরো সপ্তাহ ধরে progress গুনে।\n"
-                    "• Long‑term quests: কখনও reset হয় না, বড় reward দেয়।\n",
+                "• Weekly quests: পুরো সপ্তাহ ধরে progress গুনে।\n"
+                "• Long‑term quests: কখনও reset হয় না, বড় reward দেয়।\n",
                 style: TextStyle(fontSize: 13),
               ),
               const SizedBox(height: 8),
 
               const Text(
                 "XP (Level) কীভাবে বাড়ে:",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
               const SizedBox(height: 4),
               const Text(
                 "• তুমি যখন কোনো quest সম্পূর্ণ করে CLAIM করো, তখন XP পয়েন্ট যোগ হয়।\n"
-                    "• XP থেকে তোমার numeric level (1–100) বাড়ে।\n"
-                    "• যত বেশি XP, তত বেশি লেভেল – মানে তুমি অ্যাপে তত বেশি এক্টিভ।\n",
+                "• XP থেকে তোমার numeric level (1–100) বাড়ে।\n"
+                "• যত বেশি XP, তত বেশি লেভেল – মানে তুমি অ্যাপে তত বেশি এক্টিভ।\n",
                 style: TextStyle(fontSize: 13),
               ),
               const SizedBox(height: 8),
 
               const Text(
                 "Badge কীভাবে আপডেট হয়:",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
               const SizedBox(height: 4),
               const Text(
                 "• যখন তুমি ভালো রেটিং পাও, তখন Stars বাড়ে।\n"
-                    "• মোট Stars নির্দিষ্ট লেভেল পার করলে তোমার Badge আপগ্রেড হয়:\n"
-                    "    – 0+  → NEWBIE\n"
-                    "    – 100+  → BRONZE\n"
-                    "    – 500+  → SILVER\n"
-                    "    – 2000+ → GOLD\n"
-                    "    – 5000+ → PLATINUM\n"
-                    "    – 10000+ → DIAMOND\n",
+                "• মোট Stars নির্দিষ্ট লেভেল পার করলে তোমার Badge আপগ্রেড হয়:\n"
+                "    – 0+  → NEWBIE\n"
+                "    – 100+  → BRONZE\n"
+                "    – 500+  → SILVER\n"
+                "    – 2000+ → GOLD\n"
+                "    – 5000+ → PLATINUM\n"
+                "    – 10000+ → DIAMOND\n",
                 style: TextStyle(fontSize: 13),
               ),
               const SizedBox(height: 12),
@@ -1463,10 +1289,7 @@ class _AchievementsTabState extends State<AchievementsTab> {
               // বর্তমান স্ট্যাটাস
               const Text(
                 "Your current progress:",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
               const SizedBox(height: 4),
               Text(
@@ -1482,7 +1305,9 @@ class _AchievementsTabState extends State<AchievementsTab> {
                 style: const TextStyle(fontSize: 13),
               ),
 
-              if (nextBadgeName != null && nextBadgeStars != null && starsRemaining != null) ...[
+              if (nextBadgeName != null &&
+                  nextBadgeStars != null &&
+                  starsRemaining != null) ...[
                 const SizedBox(height: 8),
                 Text(
                   "Next badge: $nextBadgeName",
@@ -1529,18 +1354,14 @@ class _AchievementsTabState extends State<AchievementsTab> {
           .doc(uid)
           .get();
       final data = userDoc.data() ?? {};
-      final name =
-      (data['name'] ?? 'FindUs User').toString();
+      final name = (data['name'] ?? 'FindUs User').toString();
 
       final message =
           'Check out $name on FindUs! https://yourapp.com/profile/$uid';
       await Share.share(message);
 
-      await AchievementService.incrementProgress(
-          'daily_share',
-          amount: 1);
-      await AchievementService
-          .syncWeeklyChestFromServer();
+      await AchievementService.incrementProgress('daily_share', amount: 1);
+      await AchievementService.syncWeeklyChestFromServer();
 
       if (mounted) setState(() {});
     } catch (e) {

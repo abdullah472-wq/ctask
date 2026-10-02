@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:findus_app/constants/app_colors.dart';
 import 'package:findus_app/achievement/achievement_service.dart';
 import 'package:findus_app/screens/profile/unified_profile_screen.dart';
-import 'package:findus_app/screens/tabs/chat_screen.dart';
-import 'package:findus_app/services/firestore_chat_service.dart';
 import 'package:findus_app/widgets/universal_worker_card.dart';
 
 class WorkInProgressTab extends StatefulWidget {
@@ -36,7 +34,8 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
     return int.tryParse(v.toString()) ?? fallback;
   }
 
-  String _s(dynamic v, [String fallback = '']) => (v ?? fallback).toString().trim();
+  String _s(dynamic v, [String fallback = '']) =>
+      (v ?? fallback).toString().trim();
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +76,11 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.warning_amber_rounded,
-                        size: 60, color: Colors.orange),
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      size: 60,
+                      color: Colors.orange,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       "Firestore index required.\nPlease check Firebase console.",
@@ -119,8 +121,11 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.work_off_outlined,
-                    size: 60, color: Colors.grey.shade300),
+                Icon(
+                  Icons.work_off_outlined,
+                  size: 60,
+                  color: Colors.grey.shade300,
+                ),
                 const SizedBox(height: 10),
                 const Text(
                   "No work in progress right now.",
@@ -153,16 +158,17 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
   // ✅ WORK CARD WIDGET
   // ════════════════════════════════════════════════════════════════════════════
   Widget _buildWorkCard(
-      BuildContext context, {
-        required Map<String, dynamic> data,
-        required String docId,
-        required String currentUid,
-      }) {
+    BuildContext context, {
+    required Map<String, dynamic> data,
+    required String docId,
+    required String currentUid,
+  }) {
     final finderId = _s(data['finderId']); // Worker
     final supporterId = _s(data['supporterId']); // Employer
 
-    final participants =
-    (data['participants'] is List) ? List.from(data['participants']) : <dynamic>[];
+    final participants = (data['participants'] is List)
+        ? List.from(data['participants'])
+        : <dynamic>[];
 
     // ✅ Determine other user
     final otherUserId = (currentUid == supporterId) ? finderId : supporterId;
@@ -190,12 +196,17 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
         : _s(data['supporterRole']);
 
     final String location = _s(data['location'], 'Location not available');
-    final String price = _s(data['price'], _s(data['offerPrice'], 'Negotiable'));
+    final String price = _s(
+      data['price'],
+      _s(data['offerPrice'], 'Negotiable'),
+    );
     final String jobTitle = _s(data['jobTitle'], 'Job'); // Typed title
 
     // Stats
     final double ratingVal = _asDouble(data['rating']);
-    final String ratingStr = ratingVal == 0 ? '0.0' : ratingVal.toStringAsFixed(1);
+    final String ratingStr = ratingVal == 0
+        ? '0.0'
+        : ratingVal.toStringAsFixed(1);
     final int completedCount = _asInt(data['completedCount']);
 
     // ✅ Check if need to fetch other user's profile
@@ -209,12 +220,14 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
     return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>?>(
       future: needFetch
           ? _firestore
-          .collection('users')
-          .doc(otherUserId)
-          .get(const GetOptions(source: Source.serverAndCache))
+                .collection('users')
+                .doc(otherUserId)
+                .get(const GetOptions(source: Source.serverAndCache))
           : null,
       builder: (context, snap) {
-        String name = otherNameFromDoc.isNotEmpty ? otherNameFromDoc : 'Unknown User';
+        String name = otherNameFromDoc.isNotEmpty
+            ? otherNameFromDoc
+            : 'Unknown User';
         String role = otherRoleFromDoc.isNotEmpty ? otherRoleFromDoc : 'User';
         String imageUrl = otherImageFromDoc;
 
@@ -300,13 +313,6 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
                     );
                   }
                 },
-                onChatTap: () => _openChat(
-                  context,
-                  otherUserId,
-                  name, // Use actual name for chat
-                  role,
-                  imageUrl,
-                ),
               ),
 
               // ════════════════════════════════════════════════════════════
@@ -358,20 +364,24 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
               // ✅ COMPLETE BUTTON
               // ════════════════════════════════════════════════════════════
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: ElevatedButton(
                   onPressed: canComplete
                       ? () => _markJobAsCompleted(
-                    context,
-                    jobId: docId,
-                    finderId: finderId,
-                    supporterId: supporterId,
-                    participants: participants,
-                  )
+                          context,
+                          jobId: docId,
+                          finderId: finderId,
+                          supporterId: supporterId,
+                          participants: participants,
+                        )
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                    canComplete ? AppColors.brandMain : Colors.grey.shade400,
+                    backgroundColor: canComplete
+                        ? AppColors.brandMain
+                        : Colors.grey.shade400,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
@@ -416,66 +426,15 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // ✅ CHAT OPEN
-  // ════════════════════════════════════════════════════════════════════════════
-  Future<void> _openChat(
-      BuildContext context,
-      String otherUserId,
-      String name,
-      String role,
-      String imageUrl,
-      ) async {
-    if (otherUserId.isEmpty) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      final convId = await FirestoreChatService.getOrCreateConversation(
-        otherUserId: otherUserId,
-      );
-
-      if (!context.mounted) return;
-      Navigator.pop(context);
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            conversationId: convId,
-            userName: name,
-            userRole: role,
-            userImage: imageUrl,
-          ),
-        ),
-      );
-    } catch (e) {
-      debugPrint('❌ Chat error: $e');
-      if (context.mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to open chat'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    }
-  }
-
-  // ════════════════════════════════════════════════════════════════════════════
   // ✅ MARK JOB AS COMPLETED
   // ════════════════════════════════════════════════════════════════════════════
   Future<void> _markJobAsCompleted(
-      BuildContext context, {
-        required String jobId,
-        required String finderId,
-        required String supporterId,
-        required List participants,
-      }) async {
+    BuildContext context, {
+    required String jobId,
+    required String finderId,
+    required String supporterId,
+    required List participants,
+  }) async {
     final currentUser = _auth.currentUser;
     if (currentUser == null) return;
 
@@ -490,38 +449,39 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
       return;
     }
 
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text("Complete Job"),
-        content: const Text(
-          "Mark this job as completed?\n\n"
+    final confirm =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text("Complete Job"),
+            content: const Text(
+              "Mark this job as completed?\n\n"
               "This will:\n"
               "• Move it to Completed tab\n"
               "• Update your stats & earnings\n"
               "• Notify the employer",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.brandMain,
             ),
-            child: const Text(
-              "Complete",
-              style: TextStyle(color: Colors.white),
-            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.brandMain,
+                ),
+                child: const Text(
+                  "Complete",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    ) ??
+        ) ??
         false;
 
     if (!confirm) return;
@@ -575,58 +535,49 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
         });
 
         // ✅ 2. Create completed_jobs entry
-        tx.set(
-            completedRef,
-            {
-              ...data,
-              'participants': parts,
-              'finderId': finderId,
-              'supporterId': supporterId,
-              'status': 'completed',
-              'completedAt': FieldValue.serverTimestamp(),
-              'completedBy': currentUser.uid,
-              'originalRequestId': _s(data['originalRequestId'], jobId),
-              'updatedAt': FieldValue.serverTimestamp(),
-              'amount': priceAmount,
-              'priceOriginal': data['price'],
-            },
-            SetOptions(merge: true));
+        tx.set(completedRef, {
+          ...data,
+          'participants': parts,
+          'finderId': finderId,
+          'supporterId': supporterId,
+          'status': 'completed',
+          'completedAt': FieldValue.serverTimestamp(),
+          'completedBy': currentUser.uid,
+          'originalRequestId': _s(data['originalRequestId'], jobId),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'amount': priceAmount,
+          'priceOriginal': data['price'],
+        }, SetOptions(merge: true));
 
         // ✅ 3. Update hire_requests
-        tx.set(
-            requestRef,
-            {
-              'status': 'completed',
-              'completedAt': FieldValue.serverTimestamp(),
-              'completedBy': currentUser.uid,
-              'updatedAt': FieldValue.serverTimestamp(),
-            },
-            SetOptions(merge: true));
+        tx.set(requestRef, {
+          'status': 'completed',
+          'completedAt': FieldValue.serverTimestamp(),
+          'completedBy': currentUser.uid,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
 
         // ✅ 4. Update Supporter (Employer) stats
-        final supporterStatsRef =
-        _firestore.collection('user_stats').doc(supporterId);
-        tx.set(
-            supporterStatsRef,
-            {
-              'hiresCompleted': FieldValue.increment(1),
-              'hiresOngoing': FieldValue.increment(-1),
-              'totalSpent': FieldValue.increment(priceAmount),
-              'updatedAt': FieldValue.serverTimestamp(),
-            },
-            SetOptions(merge: true));
+        final supporterStatsRef = _firestore
+            .collection('user_stats')
+            .doc(supporterId);
+        tx.set(supporterStatsRef, {
+          'hiresCompleted': FieldValue.increment(1),
+          'hiresOngoing': FieldValue.increment(-1),
+          'totalSpent': FieldValue.increment(priceAmount),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
 
         // ✅ 5. Update Finder (Worker) stats with earnings
-        final finderStatsRef = _firestore.collection('user_stats').doc(finderId);
-        tx.set(
-            finderStatsRef,
-            {
-              'jobsCompleted': FieldValue.increment(1),
-              'jobsOngoing': FieldValue.increment(-1),
-              'totalEarned': FieldValue.increment(priceAmount),
-              'updatedAt': FieldValue.serverTimestamp(),
-            },
-            SetOptions(merge: true));
+        final finderStatsRef = _firestore
+            .collection('user_stats')
+            .doc(finderId);
+        tx.set(finderStatsRef, {
+          'jobsCompleted': FieldValue.increment(1),
+          'jobsOngoing': FieldValue.increment(-1),
+          'totalEarned': FieldValue.increment(priceAmount),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
       });
 
       // ✅ 6. Send notification (non-blocking)
@@ -661,11 +612,11 @@ class _WorkInProgressTabState extends State<WorkInProgressTab> {
 
   // ✅ Non-blocking notification
   Future<void> _sendCompletionNotification(
-      String supporterId,
-      String finderId,
-      String jobId,
-      double amount,
-      ) async {
+    String supporterId,
+    String finderId,
+    String jobId,
+    double amount,
+  ) async {
     try {
       if (supporterId.isNotEmpty) {
         await _firestore.collection('notifications').add({

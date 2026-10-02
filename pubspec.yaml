@@ -1,5 +1,5 @@
 name: findus_app
-description: "FindUS - Connect Workers and Supporters"
+description: "your micro-job marketplace"
 publish_to: 'none'
 
 # Version: Major.Minor.Patch+Build
@@ -39,21 +39,11 @@ dependencies:
   cached_network_image: ^3.4.1
   syncfusion_flutter_pdfviewer: ^28.1.33
 
-  # ========== MAP & LOCATION ==========
-  flutter_map: ^7.0.2
-  latlong2: ^0.9.1
-  geolocator: ^13.0.1
-  geocoding: ^2.1.1
-  visibility_detector: ^0.4.0+2
-
   # ========== AUTHENTICATION ==========
   uuid: ^4.3.3
   restart_app: ^1.2.1
   google_sign_in: ^6.2.1
   flutter_facebook_auth: ^7.0.1
-
-  # ========== CHAT ==========
-  dash_chat_2: ^0.0.21
 
   # ========== FILE & MEDIA ==========
   pdf: ^3.10.4

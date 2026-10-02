@@ -9,8 +9,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:findus_app/constants/app_colors.dart';
 import 'package:findus_app/badge/badge_model.dart';
 import 'package:findus_app/badge/badge_theme.dart';
-import 'package:findus_app/screens/tabs/chat_screen.dart';
-import 'package:findus_app/services/chat_service.dart';
 
 class UniversalWorkerCard extends StatefulWidget {
   final String? id;
@@ -40,7 +38,6 @@ class UniversalWorkerCard extends StatefulWidget {
   final bool isEditable;
   final bool isOnline;
 
-  final VoidCallback? onChatTap;
   final VoidCallback? onTap;
   final VoidCallback? onViewProfileTap;
   final VoidCallback? onSaveTap;
@@ -87,7 +84,6 @@ class UniversalWorkerCard extends StatefulWidget {
     this.isEditable = false,
     this.isOnline = false,
     this.onTap,
-    this.onChatTap,
     this.onViewProfileTap,
     this.onShareTap,
     this.badgeLevel,
@@ -117,7 +113,6 @@ class UniversalWorkerCard extends StatefulWidget {
 
 class _UniversalWorkerCardState extends State<UniversalWorkerCard> {
   late bool _isSavedLocal;
-  bool _isChatLoading = false;
   bool _isSaveLoading = false;
 
   static const List<List<Color>> _themeGradients = [
@@ -169,7 +164,9 @@ class _UniversalWorkerCardState extends State<UniversalWorkerCard> {
     }
 
     // ✅ Generate avatar from name if no valid image
-    final encodedName = Uri.encodeComponent(widget.name.isNotEmpty ? widget.name : 'User');
+    final encodedName = Uri.encodeComponent(
+      widget.name.isNotEmpty ? widget.name : 'User',
+    );
     return 'https://ui-avatars.com/api/?name=$encodedName&size=150&background=38B6FF&color=fff&bold=true';
   }
 
@@ -286,7 +283,7 @@ class _UniversalWorkerCardState extends State<UniversalWorkerCard> {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // SAVE & CHAT HANDLERS
+  // SAVE HANDLER
   // ═══════════════════════════════════════════════════════════════
 
   Future<void> _toggleSave() async {
@@ -356,81 +353,13 @@ class _UniversalWorkerCardState extends State<UniversalWorkerCard> {
     }
 
     final String link = "https://findus.app/profile/$workerId";
-    final String text = "Check out ${widget.name} on FindUs!\n"
+    final String text =
+        "Check out ${widget.name} on FindUs!\n"
         "Role: ${widget.role}\n"
         "Rating: ${widget.rating} ⭐\n"
         "$link";
 
     Share.share(text);
-  }
-
-  Future<void> _openChat() async {
-    if (widget.onChatTap != null) {
-      widget.onChatTap!();
-      return;
-    }
-
-    final currentUid = FirebaseAuth.instance.currentUser?.uid;
-    final otherUid = widget.id?.trim();
-
-    if (currentUid == null) {
-      _showSnackBar("Please login to chat");
-      return;
-    }
-
-    if (otherUid == null || otherUid.isEmpty) {
-      _showSnackBar("Invalid user for chat");
-      return;
-    }
-
-    if (currentUid == otherUid) {
-      _showSnackBar("You cannot chat with yourself");
-      return;
-    }
-
-    if (_isChatLoading) return;
-
-    setState(() => _isChatLoading = true);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(
-        child: CircularProgressIndicator(color: AppColors.brandMain),
-      ),
-    );
-
-    try {
-      final cid = await ChatService.getOrCreateConversation(
-        otherUserId: otherUid,
-        otherName: widget.name,
-        otherRole: widget.role,
-        otherImage: widget.imageUrl,
-      );
-
-      if (!mounted) return;
-      Navigator.pop(context);
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            conversationId: cid,
-            userName: widget.name,
-            userRole: widget.role,
-            userImage: widget.imageUrl,
-          ),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      Navigator.pop(context);
-      _showSnackBar("Chat failed: ${e.toString()}");
-    } finally {
-      if (mounted) {
-        setState(() => _isChatLoading = false);
-      }
-    }
   }
 
   void _showSnackBar(String message) {
@@ -471,7 +400,9 @@ class _UniversalWorkerCardState extends State<UniversalWorkerCard> {
     final badgeColor = AppBadgeTheme.colorForLevel(activeBadge);
     final badgeName = activeBadge.name.toUpperCase();
 
-    final bool isNegotiableText = widget.price.toLowerCase().contains('negotiable');
+    final bool isNegotiableText = widget.price.toLowerCase().contains(
+      'negotiable',
+    );
     final String followersDisplay = _formatNumber(widget.followersCount ?? 0);
 
     return Container(
@@ -582,7 +513,8 @@ class _UniversalWorkerCardState extends State<UniversalWorkerCard> {
               ),
             ),
             const SizedBox(width: 6),
-            if (widget.isVerifiedWorker) _statusIcon(Icons.verified, Colors.blue),
+            if (widget.isVerifiedWorker)
+              _statusIcon(Icons.verified, Colors.blue),
             if (widget.isTopRated) _statusIcon(Icons.star, Colors.orange),
             if (widget.isTrusted) _statusIcon(Icons.shield, Colors.green),
           ],
@@ -596,28 +528,6 @@ class _UniversalWorkerCardState extends State<UniversalWorkerCard> {
             fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
           ),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Icon(
-              Icons.location_on,
-              size: 12,
-              color: isDark ? Colors.white60 : Colors.grey[600],
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Text(
-                widget.address.isNotEmpty ? widget.address : "Location not set",
-                style: TextStyle(
-                  fontSize: 11,
-                  color: isDark ? Colors.white60 : Colors.grey[600],
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
         ),
         const SizedBox(height: 6),
         Container(
@@ -736,24 +646,22 @@ class _UniversalWorkerCardState extends State<UniversalWorkerCard> {
               ),
               child: Text(
                 widget.primaryButtonText.toUpperCase(),
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 8),
-        _buildIconButton(
-          _isChatLoading ? Icons.hourglass_empty : Icons.chat_bubble_outline,
-          _isChatLoading ? null : _openChat,
-          AppColors.brandMain,
-          isDark,
         ),
         if (widget.showSaveButton) ...[
           const SizedBox(width: 8),
           _buildIconButton(
             _isSavedLocal ? Icons.favorite : Icons.favorite_border,
             _isSaveLoading ? null : _toggleSave,
-            _isSavedLocal ? Colors.red : (isDark ? Colors.white70 : Colors.grey.shade600),
+            _isSavedLocal
+                ? Colors.red
+                : (isDark ? Colors.white70 : Colors.grey.shade600),
             isDark,
           ),
         ],
@@ -770,7 +678,12 @@ class _UniversalWorkerCardState extends State<UniversalWorkerCard> {
     );
   }
 
-  Widget _buildIconButton(IconData icon, VoidCallback? onTap, Color color, bool isDark) {
+  Widget _buildIconButton(
+    IconData icon,
+    VoidCallback? onTap,
+    Color color,
+    bool isDark,
+  ) {
     final isDisabled = onTap == null;
     return Container(
       width: 38,

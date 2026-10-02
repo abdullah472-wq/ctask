@@ -58,7 +58,7 @@ class _CommunityContent extends StatelessWidget {
             title: "Respect & Safe Behaviour",
             icon: Icons.handshake_rounded,
             content: [
-              "Respect all users – no abuse, bullying, harassment, or threats in chat, calls or in-person.",
+              "Respect all users – no abuse, bullying, harassment, or threats during calls or in-person.",
               "Do not use hate speech or slurs based on religion, race, gender, caste, disability, or any personal identity.",
               "Do not ask for or share sexually explicit content. Any sexual harassment, abuse or exploitation is strictly prohibited.",
               "Always behave politely during jobs – both workers and supporters must follow basic respect and professionalism.",
@@ -109,7 +109,7 @@ class _CommunityContent extends StatelessWidget {
               "Never ask or force someone to pay outside of agreed payment methods (e.g. wallet/bKash/Nagad/bank) if job was created in app.",
               "Do not offer or accept bribes, fake discounts, or schemes that look like fraud.",
               "Supporters should pay fairly for completed work as agreed. Workers should not demand unfair extra money.",
-              "FINDUS never asks for your wallet PIN, OTP or password in chat. Do not share these with anyone.",
+              "FINDUS never asks for your wallet PIN, OTP or password in official communications. Do not share these with anyone.",
             ],
             textColor: textColor,
             headingColor: headingColor,
@@ -136,12 +136,12 @@ class _CommunityContent extends StatelessWidget {
 
           _buildSection(
             number: "6",
-            title: "Communication & Chat Rules",
-            icon: Icons.chat_bubble_rounded,
+            title: "Communication Rules",
+            icon: Icons.call_rounded,
             content: [
-              "Keep chat focused on work – details, timing, location, payment, safety. Avoid unnecessary personal questions.",
-              "Do not send spam messages, advertisements, chain messages or unrelated promotional links.",
-              "Do not share harmful links, malware, or suspicious files through chat.",
+              "Keep calls and in-person conversations focused on work – details, timing, location, payment, and safety.",
+              "Do not send spam, advertisements, or unrelated promotional links through available contact channels.",
+              "Do not share harmful links, malware, or suspicious files.",
               "If someone behaves badly, threatens you or makes you uncomfortable, block/report them using app options.",
             ],
             textColor: textColor,
@@ -191,7 +191,7 @@ class _CommunityContent extends StatelessWidget {
             title: "Reporting & Enforcement",
             icon: Icons.report_rounded,
             content: [
-              "If you see any harmful, illegal or abusive behaviour, please report it from profile, chat or report section.",
+              "If you see any harmful, illegal or abusive behaviour, please report it from the profile or report section.",
               "Our team may temporarily suspend, permanently ban or limit features of accounts that violate these standards.",
               "Repeated or serious violations (fraud, abuse, harassment) may lead to legal action and sharing information with law enforcement.",
             ],
@@ -258,10 +258,7 @@ class _CommunityContent extends StatelessWidget {
             offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(
-          color: Colors.teal.withOpacity(0.2),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.teal.withOpacity(0.2), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,22 +317,14 @@ class _CommunityContent extends StatelessWidget {
             ),
             child: Text(
               "These Community Standards apply to all workers (earners) and supporters (job makers) using FINDUS. "
-                  "By using the app, you agree to follow these rules so that everyone can work, earn and hire safely.",
-              style: TextStyle(
-                color: textColor,
-                height: 1.5,
-                fontSize: 13,
-              ),
+              "By using the app, you agree to follow these rules so that everyone can work, earn and hire safely.",
+              style: TextStyle(color: textColor, height: 1.5, fontSize: 13),
             ),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(
-                Icons.update_rounded,
-                size: 14,
-                color: subtitleColor,
-              ),
+              Icon(Icons.update_rounded, size: 14, color: subtitleColor),
               const SizedBox(width: 6),
               Text(
                 "Last updated: January 2025",
@@ -407,11 +396,7 @@ class _CommunityContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,
-                  child: Icon(
-                    icon,
-                    color: accentColor,
-                    size: 22,
-                  ),
+                  child: Icon(icon, color: accentColor, size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -458,7 +443,9 @@ class _CommunityContent extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: content
-                  .map((point) => _buildBulletPoint(point, textColor, accentColor))
+                  .map(
+                    (point) => _buildBulletPoint(point, textColor, accentColor),
+                  )
                   .toList(),
             ),
           ),
@@ -489,11 +476,7 @@ class _CommunityContent extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 13,
-                height: 1.6,
-                color: textColor,
-              ),
+              style: TextStyle(fontSize: 13, height: 1.6, color: textColor),
             ),
           ),
         ],
@@ -519,24 +502,17 @@ class _CommunityContent extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: accentColor.withOpacity(0.2),
-          width: 1,
-        ),
+        border: Border.all(color: accentColor.withOpacity(0.2), width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline_rounded,
-            color: accentColor,
-            size: 22,
-          ),
+          Icon(Icons.info_outline_rounded, color: accentColor, size: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               "We may update these Community Standards from time to time to keep everyone safe. "
-                  "By continuing to use FINDUS, you agree to the latest version of these rules.",
+              "By continuing to use FINDUS, you agree to the latest version of these rules.",
               style: TextStyle(
                 fontSize: 12,
                 color: textColor.withOpacity(0.8),

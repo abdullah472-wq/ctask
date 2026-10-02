@@ -5,7 +5,6 @@ class ProfileVisitorActionBar extends StatelessWidget {
   final bool isDark;
   final bool isPaused;
   final bool hasPhone;
-  final VoidCallback onChatTap;
   final VoidCallback onCallTap;
   final VoidCallback onEmailTap;
   final VoidCallback onViewPostsTap;
@@ -15,7 +14,6 @@ class ProfileVisitorActionBar extends StatelessWidget {
     required this.isDark,
     required this.isPaused,
     required this.hasPhone,
-    required this.onChatTap,
     required this.onCallTap,
     required this.onEmailTap,
     required this.onViewPostsTap,
@@ -41,16 +39,6 @@ class ProfileVisitorActionBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Chat Button
-          _buildActionButton(
-            icon: Icons.chat_bubble_outline_rounded,
-            label: 'Chat',
-            color: Colors.blue,
-            onPressed: onChatTap,
-          ),
-
-          const SizedBox(width: 12),
-
           // Call or Email
           if (hasPhone)
             _buildActionButton(

@@ -12,13 +12,11 @@ import 'package:findus_app/constants/app_colors.dart';
 import 'package:findus_app/badge/badge_model.dart';
 import 'package:findus_app/badge/badge_service.dart';
 import 'package:findus_app/services/blocked_user_service.dart';
-import 'package:findus_app/services/firestore_chat_service.dart';
 import 'package:findus_app/services/card_theme_service.dart';
 import 'package:findus_app/achievement/achievement_service.dart';
 import 'package:findus_app/widgets/floating_scaffold.dart';
 
 // Screens
-import 'package:findus_app/screens/tabs/chat_screen.dart';
 import 'package:findus_app/screens/tabs/leaderboard_screen.dart';
 import 'package:findus_app/screens/settings/settings_screen.dart';
 import 'package:findus_app/screens/settings/subscription_screen.dart';
@@ -41,7 +39,6 @@ import 'widgets/profile_documents_button.dart';
 import 'widgets/profile_visitor_action_bar.dart';
 import 'widgets/profile_suggestions_section.dart';
 import 'widgets/profile_shimmer_loading.dart';
-
 
 class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
   // ═══════════════════════════════════════════════════════════════
@@ -73,7 +70,8 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
 
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _postsSectionKey = GlobalKey();
-  final GlobalKey<RefreshIndicatorState> _refreshKey = GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshKey =
+      GlobalKey<RefreshIndicatorState>();
 
   late VoidCallback _badgeListener;
 
@@ -133,29 +131,34 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         .collection('users')
         .doc(widget.uid)
         .snapshots()
-        .listen((snap) {
-      if (!snap.exists || !mounted) return;
-      final data = snap.data() ?? {};
+        .listen(
+          (snap) {
+            if (!snap.exists || !mounted) return;
+            final data = snap.data() ?? {};
 
-      // Owner হলে BadgeService এ পয়েন্ট সেট করা
-      if (widget.isOwner) {
-        final rawXp = data['user_badge_points'] ?? data['xpPoints'] ?? 0;
-        final int xp = int.tryParse(rawXp.toString()) ?? 0;
-        BadgeService.setPointsFromServer(xp);
-      }
+            // Owner হলে BadgeService এ পয়েন্ট সেট করা
+            if (widget.isOwner) {
+              final rawXp = data['user_badge_points'] ?? data['xpPoints'] ?? 0;
+              final int xp = int.tryParse(rawXp.toString()) ?? 0;
+              BadgeService.setPointsFromServer(xp);
+            }
 
-      final rawIdx = data['cardThemeIndex'];
-      final idx = (rawIdx is int) ? rawIdx : int.tryParse(rawIdx?.toString() ?? '') ?? 0;
+            final rawIdx = data['cardThemeIndex'];
+            final idx = (rawIdx is int)
+                ? rawIdx
+                : int.tryParse(rawIdx?.toString() ?? '') ?? 0;
 
-      setState(() {
-        userData = data;
-        _cardThemeIndex = idx.clamp(0, 3);
-        isOnline = (data['isOnline'] ?? false) == true;
-        isLoading = false;
-      });
-    }, onError: (_) {
-      if (mounted) setState(() => isLoading = false);
-    });
+            setState(() {
+              userData = data;
+              _cardThemeIndex = idx.clamp(0, 3);
+              isOnline = (data['isOnline'] ?? false) == true;
+              isLoading = false;
+            });
+          },
+          onError: (_) {
+            if (mounted) setState(() => isLoading = false);
+          },
+        );
   }
 
   void _listenToUserStats() {
@@ -165,9 +168,9 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         .doc(widget.uid)
         .snapshots()
         .listen((snap) {
-      if (!mounted) return;
-      setState(() => userStats = snap.data() ?? {});
-    });
+          if (!mounted) return;
+          setState(() => userStats = snap.data() ?? {});
+        });
   }
 
   void _listenToFollowCounts() {
@@ -180,8 +183,8 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         .collection('followers')
         .snapshots()
         .listen((q) {
-      if (mounted) setState(() => _followersCountLive = q.size);
-    });
+          if (mounted) setState(() => _followersCountLive = q.size);
+        });
 
     _followingCountSub = FirebaseFirestore.instance
         .collection('users')
@@ -189,8 +192,8 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         .collection('following')
         .snapshots()
         .listen((q) {
-      if (mounted) setState(() => _followingCountLive = q.size);
-    });
+          if (mounted) setState(() => _followingCountLive = q.size);
+        });
   }
 
   void _listenToNotifications() {
@@ -203,16 +206,19 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         .where('toUserId', isEqualTo: uid)
         .where('isRead', isEqualTo: false) // ✅ শুধু unread count
         .snapshots()
-        .listen((q) {
-      if (mounted) {
-        debugPrint("🔔 Unread notifications: ${q.docs.length}");
-        setState(() {
-          _unreadNotifCount = q.docs.length;
-        });
-      }
-    }, onError: (e) {
-      debugPrint("❌ Notification error: $e");
-    });
+        .listen(
+          (q) {
+            if (mounted) {
+              debugPrint("🔔 Unread notifications: ${q.docs.length}");
+              setState(() {
+                _unreadNotifCount = q.docs.length;
+              });
+            }
+          },
+          onError: (e) {
+            debugPrint("❌ Notification error: $e");
+          },
+        );
   }
 
   void _listenToUserRank() {
@@ -223,16 +229,16 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         .limit(100)
         .snapshots()
         .listen((snapshot) {
-      if (!mounted) return;
-      int rank = 0;
-      for (int i = 0; i < snapshot.docs.length; i++) {
-        if (snapshot.docs[i].id == widget.uid) {
-          rank = i + 1;
-          break;
-        }
-      }
-      if (_userRank != rank) setState(() => _userRank = rank);
-    });
+          if (!mounted) return;
+          int rank = 0;
+          for (int i = 0; i < snapshot.docs.length; i++) {
+            if (snapshot.docs[i].id == widget.uid) {
+              rank = i + 1;
+              break;
+            }
+          }
+          if (_userRank != rank) setState(() => _userRank = rank);
+        });
   }
 
   Future<void> _checkIfFollowing() async {
@@ -270,26 +276,27 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBg = isDark ? const Color(0xFF1A1A1A) : AppColors.brandLight;
     final titleColor = isDark ? Colors.white : AppColors.brandDark;
-    final subscriptionType = userData['subscription_type']?.toString() ?? 'free';
+    final subscriptionType =
+        userData['subscription_type']?.toString() ?? 'free';
 
     return Scaffold(
       bottomNavigationBar: !widget.isOwner
           ? SafeArea(
-        top: false,
-        child: ProfileVisitorActionBar(
-          isDark: isDark,
-          isPaused: userData['workPaused'] == true,
-          hasPhone: userData['phone']?.toString().isNotEmpty == true,
-          onChatTap: _openChat,
-          onCallTap: _makePhoneCall,
-          onEmailTap: _sendEmail,
-          onViewPostsTap: _scrollToPosts,
-        ),
-      )
+              top: false,
+              child: ProfileVisitorActionBar(
+                isDark: isDark,
+                isPaused: userData['workPaused'] == true,
+                hasPhone: userData['phone']?.toString().isNotEmpty == true,
+                onCallTap: _makePhoneCall,
+                onEmailTap: _sendEmail,
+                onViewPostsTap: _scrollToPosts,
+              ),
+            )
           : null,
       body: Builder(
         builder: (ctx) {
-          final bool shouldShowBack = widget.showBack ?? Navigator.of(ctx).canPop();
+          final bool shouldShowBack =
+              widget.showBack ?? Navigator.of(ctx).canPop();
 
           return FloatingScaffold(
             showBack: shouldShowBack,
@@ -306,12 +313,16 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
               key: _refreshKey,
               onRefresh: _refreshData,
               child: ScrollConfiguration(
-                behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                behavior: ScrollConfiguration.of(
+                  context,
+                ).copyWith(scrollbars: false),
                 child: SingleChildScrollView(
                   controller: _scrollController,
                   physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.only(bottom: 20),
-                  child: isLoading ? _buildShimmerLoading() : _buildBody(isDark),
+                  child: isLoading
+                      ? _buildShimmerLoading()
+                      : _buildBody(isDark),
                 ),
               ),
             ),
@@ -509,7 +520,9 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                isLocked ? 'This profile is locked.' : 'This profile is currently hidden.',
+                isLocked
+                    ? 'This profile is locked.'
+                    : 'This profile is currently hidden.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: textColor, fontSize: 16),
               ),
@@ -531,7 +544,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
       _buildActionButton(
         Icons.notifications_none_rounded,
         'Notifications',
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen())),
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const NotificationScreen()),
+        ),
         isDark,
         showBadge: true,
         badgeCount: _unreadNotifCount,
@@ -541,8 +557,13 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
       _buildActionButton(
         Icons.groups_outlined,
         'Team',
-            () => _isBusinessUser
-            ? Navigator.push(context, MaterialPageRoute(builder: (_) => TeamManagementScreen(userId: widget.uid)))
+        () => _isBusinessUser
+            ? Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TeamManagementScreen(userId: widget.uid),
+                ),
+              )
             : _showUpgradeToBusinessPopup(),
         isDark,
       ),
@@ -551,7 +572,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
       _buildActionButton(
         Icons.settings_outlined,
         'Settings',
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+        ),
         isDark,
       ),
 
@@ -561,19 +585,17 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
   }
 
   List<Widget> _buildVisitorActions(bool isDark) {
-    return [
-      _buildVisitorMenuButton(isDark),
-    ];
+    return [_buildVisitorMenuButton(isDark)];
   }
 
   Widget _buildActionButton(
-      IconData icon,
-      String tooltip,
-      VoidCallback onPressed,
-      bool isDark, {
-        bool showBadge = false,
-        int badgeCount = 0,
-      }) {
+    IconData icon,
+    String tooltip,
+    VoidCallback onPressed,
+    bool isDark, {
+    bool showBadge = false,
+    int badgeCount = 0,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
       width: 40,
@@ -582,14 +604,18 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         color: isDark ? Colors.white10 : Colors.white.withOpacity(0.7),
         shape: BoxShape.circle,
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
           IconButton(
-            icon: Icon(icon, size: 20, color: isDark ? Colors.white : Colors.black),
+            icon: Icon(
+              icon,
+              size: 20,
+              color: isDark ? Colors.white : Colors.black,
+            ),
             onPressed: onPressed,
             padding: EdgeInsets.zero,
             tooltip: tooltip,
@@ -625,7 +651,7 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         color: isDark ? Colors.white10 : Colors.white.withOpacity(0.7),
         shape: BoxShape.circle,
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
       child: PopupMenuButton<ProfileMenuOwner>(
@@ -633,7 +659,11 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: EdgeInsets.zero,
-        icon: Icon(Icons.more_vert, size: 20, color: isDark ? Colors.white : Colors.black),
+        icon: Icon(
+          Icons.more_vert,
+          size: 20,
+          color: isDark ? Colors.white : Colors.black,
+        ),
         itemBuilder: (ctx) => _buildOwnerMenuItems(subscriptionType),
       ),
     );
@@ -648,7 +678,7 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         color: isDark ? Colors.white10 : Colors.white.withOpacity(0.7),
         shape: BoxShape.circle,
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
       child: PopupMenuButton<ProfileMenuOther>(
@@ -656,7 +686,11 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: EdgeInsets.zero,
-        icon: Icon(Icons.more_vert, size: 20, color: isDark ? Colors.white : Colors.black),
+        icon: Icon(
+          Icons.more_vert,
+          size: 20,
+          color: isDark ? Colors.white : Colors.black,
+        ),
         itemBuilder: (ctx) => [
           PopupMenuItem(
             value: ProfileMenuOther.report,
@@ -664,7 +698,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
               children: [
                 Icon(Icons.flag_outlined, size: 20, color: Colors.orange[400]),
                 const SizedBox(width: 12),
-                Text('Report', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+                Text(
+                  'Report',
+                  style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                ),
               ],
             ),
           ),
@@ -674,7 +711,13 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
               children: [
                 Icon(Icons.block, size: 20, color: Colors.red[400]),
                 const SizedBox(width: 12),
-                Text('Block', style: TextStyle(color: Colors.red[400], fontWeight: FontWeight.w500)),
+                Text(
+                  'Block',
+                  style: TextStyle(
+                    color: Colors.red[400],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),
@@ -683,19 +726,36 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
     );
   }
 
-  List<PopupMenuEntry<ProfileMenuOwner>> _buildOwnerMenuItems(String subscriptionType) {
+  List<PopupMenuEntry<ProfileMenuOwner>> _buildOwnerMenuItems(
+    String subscriptionType,
+  ) {
     final bool isFreeUser = subscriptionType == 'free';
     final bool isLocked = userData['accountLocked'] == true;
     final bool isPaused = userData['workPaused'] == true;
     final bool isHidden = userData['profileHidden'] == true;
 
-    Widget menuRow(IconData icon, String text, Color color, {bool showLock = false}) {
+    Widget menuRow(
+      IconData icon,
+      String text,
+      Color color, {
+      bool showLock = false,
+    }) {
       return Row(
         children: [
           Icon(icon, size: 20, color: color),
           const SizedBox(width: 12),
-          Expanded(child: Text(text, style: const TextStyle(fontWeight: FontWeight.w500))),
-          if (showLock) const Icon(Icons.workspace_premium, size: 16, color: Colors.deepPurpleAccent),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          if (showLock)
+            const Icon(
+              Icons.workspace_premium,
+              size: 16,
+              color: Colors.deepPurpleAccent,
+            ),
         ],
       );
     }
@@ -725,7 +785,12 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
       ),
       PopupMenuItem(
         value: ProfileMenuOwner.theme,
-        child: menuRow(Icons.palette_rounded, 'Change Theme', Colors.orange, showLock: isFreeUser),
+        child: menuRow(
+          Icons.palette_rounded,
+          'Change Theme',
+          Colors.orange,
+          showLock: isFreeUser,
+        ),
       ),
       PopupMenuItem(
         value: ProfileMenuOwner.hideProfile,
@@ -753,14 +818,17 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
   // ═══════════════════════════════════════════════════════════════
 
   void _handleOwnerMenu(ProfileMenuOwner value) {
-    final subscriptionType = userData['subscription_type']?.toString() ?? 'free';
+    final subscriptionType =
+        userData['subscription_type']?.toString() ?? 'free';
     final bool isFreeUser = subscriptionType == 'free';
 
     switch (value) {
       case ProfileMenuOwner.edit:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => UnifiedProfileEditScreen(uid: widget.uid)),
+          MaterialPageRoute(
+            builder: (_) => UnifiedProfileEditScreen(uid: widget.uid),
+          ),
         );
         break;
 
@@ -791,7 +859,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
   void _handleVisitorMenu(ProfileMenuOther value) {
     switch (value) {
       case ProfileMenuOther.report:
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportScreen()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ReportScreen()),
+        );
         break;
       case ProfileMenuOther.block:
         _blockUser();
@@ -832,19 +903,16 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
 
     try {
       final current = userData[field] == true;
-      await FirebaseFirestore.instance.collection('users').doc(widget.uid).update({
-        field: !current,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.uid)
+          .update({field: !current, 'updatedAt': FieldValue.serverTimestamp()});
 
       setState(() => userData[field] = !current);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(successMsg),
-            backgroundColor: Colors.green,
-          ),
+          SnackBar(content: Text(successMsg), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
@@ -869,8 +937,12 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
 
     try {
       final batch = FirebaseFirestore.instance.batch();
-      final userRef = FirebaseFirestore.instance.collection('users').doc(widget.uid);
-      final currentUserRef = FirebaseFirestore.instance.collection('users').doc(currentUid);
+      final userRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.uid);
+      final currentUserRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUid);
       final followRef = currentUserRef.collection('following').doc(widget.uid);
       final followerRef = userRef.collection('followers').doc(currentUid);
 
@@ -879,10 +951,13 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         batch.delete(followRef);
         batch.delete(followerRef);
         batch.update(userRef, {'followersCount': FieldValue.increment(-1)});
-        batch.update(currentUserRef, {'followingCount': FieldValue.increment(-1)});
+        batch.update(currentUserRef, {
+          'followingCount': FieldValue.increment(-1),
+        });
       } else {
         // Follow
-        final currentUserName = FirebaseAuth.instance.currentUser?.displayName ?? 'User';
+        final currentUserName =
+            FirebaseAuth.instance.currentUser?.displayName ?? 'User';
         batch.set(followRef, {
           'followedAt': FieldValue.serverTimestamp(),
           'userName': userData['name'] ?? 'User',
@@ -892,7 +967,9 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
           'userName': currentUserName,
         });
         batch.update(userRef, {'followersCount': FieldValue.increment(1)});
-        batch.update(currentUserRef, {'followingCount': FieldValue.increment(1)});
+        batch.update(currentUserRef, {
+          'followingCount': FieldValue.increment(1),
+        });
 
         // Achievement tracking
         await AchievementService.incrementProgress('daily_follow');
@@ -958,7 +1035,11 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
       stars = stats.totalStars;
     } else {
       xp = int.tryParse((userData['xpPoints'] ?? 0).toString()) ?? 0;
-      stars = double.tryParse((userData['user_accumulated_stars'] ?? 0.0).toString()) ?? 0.0;
+      stars =
+          double.tryParse(
+            (userData['user_accumulated_stars'] ?? 0.0).toString(),
+          ) ??
+          0.0;
       badge = BadgeService.getBadgeByStars(stars);
     }
 
@@ -972,7 +1053,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -980,7 +1064,11 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: mainColor.withOpacity(0.35)),
               boxShadow: [
-                BoxShadow(color: mainColor.withOpacity(0.45), blurRadius: 28, offset: const Offset(0, 12)),
+                BoxShadow(
+                  color: mainColor.withOpacity(0.45),
+                  blurRadius: 28,
+                  offset: const Offset(0, 12),
+                ),
               ],
             ),
             child: Column(
@@ -996,10 +1084,18 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
                       colors: [mainColor, mainColor.withOpacity(0.6)],
                     ),
                     boxShadow: [
-                      BoxShadow(color: mainColor.withOpacity(0.5), blurRadius: 18, offset: const Offset(0, 8)),
+                      BoxShadow(
+                        color: mainColor.withOpacity(0.5),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
                     ],
                   ),
-                  child: const Icon(Icons.workspace_premium, color: Colors.white, size: 36),
+                  child: const Icon(
+                    Icons.workspace_premium,
+                    color: Colors.white,
+                    size: 36,
+                  ),
                 ),
 
                 const SizedBox(height: 16),
@@ -1019,7 +1115,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
 
                 // Level
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: isDark ? Colors.white10 : Colors.grey[100],
                     borderRadius: BorderRadius.circular(20),
@@ -1076,14 +1175,18 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
   void _showLeaderboard() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const LeaderboardScreen(isStandalone: true)),
+      MaterialPageRoute(
+        builder: (_) => const LeaderboardScreen(isStandalone: true),
+      ),
     );
   }
 
   void _openRatingHistory() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => RatingHistoryScreen(targetUserId: widget.uid)),
+      MaterialPageRoute(
+        builder: (_) => RatingHistoryScreen(targetUserId: widget.uid),
+      ),
     );
   }
 
@@ -1106,7 +1209,13 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             iconTheme: const IconThemeData(color: Colors.white),
-            title: Text(userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            title: Text(
+              userName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             centerTitle: true,
           ),
           body: GestureDetector(
@@ -1118,13 +1227,17 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
                   fit: BoxFit.contain,
-                  placeholder: (_, __) => const CircularProgressIndicator(color: Colors.white),
+                  placeholder: (_, __) =>
+                      const CircularProgressIndicator(color: Colors.white),
                   errorWidget: (_, __, ___) => const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.broken_image, color: Colors.white54, size: 80),
                       SizedBox(height: 16),
-                      Text("Image not available", style: TextStyle(color: Colors.white54)),
+                      Text(
+                        "Image not available",
+                        style: TextStyle(color: Colors.white54),
+                      ),
                     ],
                   ),
                 ),
@@ -1139,37 +1252,6 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
   // ═══════════════════════════════════════════════════════════════
   // COMMUNICATION ACTIONS
   // ═══════════════════════════════════════════════════════════════
-
-  void _openChat() async {
-    try {
-      final roleLabel = _isWorkerRole() ? "Worker" : "Supporter";
-      final cid = await FirestoreChatService.getOrCreateConversation(otherUserId: widget.uid);
-
-      if (!mounted) return;
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            conversationId: cid,
-            userName: userData['name']?.toString() ?? 'User',
-            userRole: roleLabel,
-            userImage: userData['image']?.toString() ?? '',
-            otherUserId: widget.uid,
-          ),
-        ),
-      );
-
-      // Track achievement
-      await AchievementService.incrementProgress('lt_chat_s1');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to open chat: $e')),
-        );
-      }
-    }
-  }
 
   void _makePhoneCall() async {
     final phone = userData['phone']?.toString();
@@ -1188,9 +1270,9 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to make call: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to make call: $e')));
       }
     }
   }
@@ -1198,9 +1280,9 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
   void _sendEmail() async {
     final email = userData['email']?.toString();
     if (email == null || email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email not available')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Email not available')));
       return;
     }
 
@@ -1212,9 +1294,9 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send email: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to send email: $e')));
       }
     }
   }
@@ -1229,9 +1311,9 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         alignment: 0.05,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No posts available")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("No posts available")));
     }
   }
 
@@ -1287,10 +1369,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         ),
         content: Text(
           "They won't be able to:\n\n"
-              "• Send you messages\n"
-              "• See your profile\n"
-              "• Contact you\n\n"
-              "You can unblock them anytime.",
+          "• Send you messages\n"
+          "• See your profile\n"
+          "• Contact you\n\n"
+          "You can unblock them anytime.",
           style: TextStyle(
             color: isDark ? Colors.white70 : Colors.black54,
             height: 1.5,
@@ -1299,13 +1381,18 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text("Cancel", style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red[400],
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text("Block"),
@@ -1337,7 +1424,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to block: $e"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text("Failed to block: $e"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -1349,9 +1439,12 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
 
   void _showCardThemeBottomSheet() async {
     try {
-      final subscriptionType = userData['subscription_type']?.toString() ?? 'free';
+      final subscriptionType =
+          userData['subscription_type']?.toString() ?? 'free';
       final bool isProUser = subscriptionType != 'free';
-      final currentColorIndex = await CardThemeService.getCardThemeIndex(widget.uid);
+      final currentColorIndex = await CardThemeService.getCardThemeIndex(
+        widget.uid,
+      );
 
       if (!mounted) return;
 
@@ -1373,9 +1466,9 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
         },
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error loading themes')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Error loading themes')));
     }
   }
 
@@ -1414,10 +1507,14 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundImage: userData['image'] != null && userData['image'].toString().isNotEmpty
+                      backgroundImage:
+                          userData['image'] != null &&
+                              userData['image'].toString().isNotEmpty
                           ? NetworkImage(userData['image'].toString())
                           : null,
-                      child: userData['image'] == null || userData['image'].toString().isEmpty
+                      child:
+                          userData['image'] == null ||
+                              userData['image'].toString().isEmpty
                           ? const Icon(Icons.person, size: 40)
                           : null,
                     ),
@@ -1439,9 +1536,15 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _previewStat("Rating", userData['rating']?.toString() ?? '0.0'),
+                        _previewStat(
+                          "Rating",
+                          userData['rating']?.toString() ?? '0.0',
+                        ),
                         const SizedBox(width: 24),
-                        _previewStat(isWorker ? "Jobs" : "Hired", userData['completedCount']?.toString() ?? '0'),
+                        _previewStat(
+                          isWorker ? "Jobs" : "Hired",
+                          userData['completedCount']?.toString() ?? '0',
+                        ),
                       ],
                     ),
                   ],
@@ -1468,7 +1571,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
   Widget _previewStat(String label, String value) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
         Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       ],
     );
@@ -1502,7 +1608,9 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Upgrade to Premium'),
-        content: const Text('Unlock exclusive features like Locking Account, Custom Themes, and more!'),
+        content: const Text(
+          'Unlock exclusive features like Locking Account, Custom Themes, and more!',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -1511,7 +1619,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+              );
             },
             child: const Text('Upgrade'),
           ),
@@ -1525,7 +1636,9 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Upgrade to Business'),
-        content: const Text('Unlock Team Management and other business features!'),
+        content: const Text(
+          'Unlock Team Management and other business features!',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -1534,7 +1647,10 @@ class UnifiedProfileScreenState extends State<UnifiedProfileScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+              );
             },
             child: const Text('Upgrade'),
           ),

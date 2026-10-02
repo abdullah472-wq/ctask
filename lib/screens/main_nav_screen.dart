@@ -10,7 +10,6 @@ import 'package:findus_app/constants/app_colors.dart';
 
 import 'home_feed_screen.dart';
 import 'explore/explore_screen.dart';
-import 'tabs/conversation_tab.dart';
 import 'package:findus_app/screens/profile/unified_profile_screen.dart';
 import 'package:findus_app/screens/auth/log_in_chacker_screen.dart';
 import 'package:findus_app/achievement/achievement_service.dart';
@@ -18,12 +17,12 @@ import 'package:findus_app/achievement/achievement_service.dart';
 class MainNavScreen extends StatefulWidget {
   const MainNavScreen({super.key});
 
-  static final GlobalKey<_MainNavScreenState> navKey = GlobalKey<_MainNavScreenState>();
+  static final GlobalKey<_MainNavScreenState> navKey =
+      GlobalKey<_MainNavScreenState>();
 
   static void goToHomeTab() => navKey.currentState?._goToTab(0);
   static void goToExploreTab() => navKey.currentState?._goToTab(1);
-  static void goToMessagesTab() => navKey.currentState?._goToTab(2);
-  static void goToProfileTab() => navKey.currentState?._goToTab(3);
+  static void goToProfileTab() => navKey.currentState?._goToTab(2);
 
   @override
   State<MainNavScreen> createState() => _MainNavScreenState();
@@ -34,13 +33,11 @@ class _MainNavScreenState extends State<MainNavScreen> {
   final PageController _pageController = PageController(initialPage: 1);
 
   // Badge Variables
-  int unreadMessagesCount = 0;
   bool showHomeRedDot = false;
 
   // ✅ Stream Subscriptions (for proper cleanup)
   StreamSubscription? _ongoingJobsSubscription;
   StreamSubscription? _completedJobsSubscription;
-  StreamSubscription? _unreadMessagesSubscription;
 
   @override
   void initState() {
@@ -56,7 +53,6 @@ class _MainNavScreenState extends State<MainNavScreen> {
     // ✅ Cancel all subscriptions
     _ongoingJobsSubscription?.cancel();
     _completedJobsSubscription?.cancel();
-    _unreadMessagesSubscription?.cancel();
 
     AchievementService.achievementsNotifier.removeListener(_checkHomeRedDot);
     _pageController.dispose();
@@ -75,8 +71,8 @@ class _MainNavScreenState extends State<MainNavScreen> {
         .snapshots()
         .listen(
           (snap) => _checkHomeRedDot(),
-      onError: (e) => debugPrint('Ongoing jobs stream error: $e'),
-    );
+          onError: (e) => debugPrint('Ongoing jobs stream error: $e'),
+        );
 
     // ✅ 2. Completed Jobs Stream
     _completedJobsSubscription = FirebaseFirestore.instance
@@ -87,28 +83,8 @@ class _MainNavScreenState extends State<MainNavScreen> {
         .snapshots()
         .listen(
           (snap) => _checkHomeRedDot(),
-      onError: (e) => debugPrint('Completed jobs stream error: $e'),
-    );
-
-    // ✅ 3. Unread Messages Stream
-    _unreadMessagesSubscription = FirebaseFirestore.instance
-        .collection('conversations')
-        .where('participants', arrayContains: uid)
-        .snapshots()
-        .listen(
-          (snap) {
-        int count = 0;
-        for (var doc in snap.docs) {
-          final data = doc.data();
-          final unreadMap = data['unreadCount'] as Map<String, dynamic>? ?? {};
-          count += (unreadMap[uid] ?? 0) as int;
-        }
-        if (mounted && count != unreadMessagesCount) {
-          setState(() => unreadMessagesCount = count);
-        }
-      },
-      onError: (e) => debugPrint('Unread messages stream error: $e'),
-    );
+          onError: (e) => debugPrint('Completed jobs stream error: $e'),
+        );
   }
 
   Future<void> _checkHomeRedDot() async {
@@ -120,7 +96,9 @@ class _MainNavScreenState extends State<MainNavScreen> {
 
     // 1. Quest Check
     final allAchievements = AchievementService.achievementsNotifier.value;
-    hasClaimableQuest = allAchievements.any((st) => st.isCompleted && !st.claimed);
+    hasClaimableQuest = allAchievements.any(
+      (st) => st.isCompleted && !st.claimed,
+    );
 
     // ✅ 2. Job Completion Check (Finder can mark complete)
     try {
@@ -189,21 +167,16 @@ class _MainNavScreenState extends State<MainNavScreen> {
             uid != null
                 ? HomeFeedScreen(key: HomeFeedScreen.feedKey)
                 : const ProfileNotLoggedIn(
-              title: "Home Feed",
-              showBackButton: false,
-            ),
+                    title: "Home Feed",
+                    showBackButton: false,
+                  ),
             const ExploreScreen(),
-            const ConversationTab(),
             uid != null
-                ? UnifiedProfileScreen(
-              uid: uid,
-              isOwner: true,
-              showBack: false,
-            )
+                ? UnifiedProfileScreen(uid: uid, isOwner: true, showBack: false)
                 : const ProfileNotLoggedIn(
-              title: "Your Profile",
-              showBackButton: false,
-            ),
+                    title: "Your Profile",
+                    showBackButton: false,
+                  ),
           ],
         ),
         bottomNavigationBar: _buildModernNavBar(isDark),
@@ -251,15 +224,6 @@ class _MainNavScreenState extends State<MainNavScreen> {
                 ),
                 _NavItem(
                   index: 2,
-                  currentIndex: _currentIndex,
-                  activeIcon: Icons.chat_bubble_rounded,
-                  inactiveIcon: Icons.chat_bubble_outline,
-                  label: 'Chat',
-                  badgeCount: unreadMessagesCount,
-                  onTap: _goToTab,
-                ),
-                _NavItem(
-                  index: 3,
                   currentIndex: _currentIndex,
                   activeIcon: Icons.person_rounded,
                   inactiveIcon: Icons.person_outline,

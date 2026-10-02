@@ -49,7 +49,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.admin_panel_settings_rounded, color: AppColors.brandMain),
+            const Icon(
+              Icons.admin_panel_settings_rounded,
+              color: AppColors.brandMain,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -79,10 +82,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
             child: ElevatedButton(
               onPressed: () => Navigator.pop(ctx),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                backgroundColor: isDark
+                    ? Colors.grey.shade800
+                    : Colors.grey.shade200,
                 foregroundColor: isDark ? Colors.white : Colors.black,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: const Text("CLOSE"),
             ),
@@ -97,7 +104,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => UnifiedProfileScreen(uid: senderId, isOwner: false, showBack: true),
+        builder: (_) =>
+            UnifiedProfileScreen(uid: senderId, isOwner: false, showBack: true),
       ),
     );
   }
@@ -111,7 +119,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
         .get();
 
     final userData = userDoc.data() ?? {};
-    final name = (userData['name'] ?? userData['fullName'] ?? 'User').toString();
+    final name = (userData['name'] ?? userData['fullName'] ?? 'User')
+        .toString();
 
     final notifRef = FirebaseFirestore.instance
         .collection('users')
@@ -127,8 +136,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     await notifRef.add({
       'title': 'Welcome to FindUs, $name!',
-      'body': 'Thanks for joining the FindUs community.\n'
-          'You can complete your profile, explore jobs, and start chatting with other members right away.',
+      'body':
+          'Thanks for joining the FindUs community.\n'
+          'You can complete your profile, explore jobs, and connect with local members right away.',
       'type': 'welcome',
       'senderId': '',
       'read': false,
@@ -161,7 +171,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
               Navigator.pop(ctx);
               NotificationService.deleteAllNotifications(_uid);
             },
-            child: const Text("Delete All", style: TextStyle(color: Colors.white)),
+            child: const Text(
+              "Delete All",
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -173,11 +186,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
   // ═══════════════════════════════════════════════════════════════
 
   void _showNotificationOptions(
-      BuildContext context,
-      String notifId,
-      Map<String, dynamic> data,
-      bool isDark,
-      ) {
+    BuildContext context,
+    String notifId,
+    Map<String, dynamic> data,
+    bool isDark,
+  ) {
     final String title = data['title'] ?? 'Notification';
     final String body = data['body'] ?? '';
     final String type = (data['type'] ?? '').toString().toLowerCase();
@@ -343,11 +356,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
   String _getTypeLabel(String type) {
     if (type.contains('admin')) return 'Admin';
     if (type.contains('job')) return 'Job';
-    if (type.contains('message') || type.contains('chat')) return 'Message';
     if (type.contains('profile')) return 'Profile';
     if (type.contains('review')) return 'Review';
     if (type.contains('help')) return 'Help';
-    return 'This Type of';
+    return 'Notification';
   }
 
   Future<void> _muteNotificationType(String type) async {
@@ -358,9 +370,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
           .collection('settings')
           .doc('notifications')
           .set({
-        'muted_types': FieldValue.arrayUnion([type]),
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+            'muted_types': FieldValue.arrayUnion([type]),
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
 
       _showSnackBar("${_getTypeLabel(type)} notifications muted");
     } catch (e) {
@@ -558,7 +570,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
   // ✅ NOTIFICATION ITEM WITH 3-DOT MENU
   // ═══════════════════════════════════════════════════════════════
 
-  Widget _buildNotificationItem(Map<String, dynamic> data, String id, bool isDark) {
+  Widget _buildNotificationItem(
+    Map<String, dynamic> data,
+    String id,
+    bool isDark,
+  ) {
     final title = data['title'] ?? 'New Notification';
     final body = data['body'] ?? '';
     final type = (data['type'] ?? 'info').toString().toLowerCase();
@@ -575,9 +591,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
     } else if (type.contains('job')) {
       icon = Icons.work;
       iconColor = Colors.orange;
-    } else if (type.contains('message') || type.contains('chat')) {
-      icon = Icons.chat_bubble;
-      iconColor = Colors.blue;
     } else if (type.contains('help') || type.contains('welcome')) {
       icon = Icons.support_agent;
       iconColor = Colors.purpleAccent;
@@ -619,7 +632,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
           context: context,
           builder: (ctx) => AlertDialog(
             backgroundColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: Text(
               "Delete Notification?",
               style: TextStyle(color: isDark ? Colors.white : Colors.black),
@@ -632,7 +647,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text("Delete", style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  "Delete",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -719,7 +737,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             title,
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: isRead ? FontWeight.w500 : FontWeight.bold,
+                              fontWeight: isRead
+                                  ? FontWeight.w500
+                                  : FontWeight.bold,
                               color: textColor,
                             ),
                             maxLines: 1,
@@ -750,7 +770,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         _formatTime(ts),
                         style: TextStyle(
                           fontSize: 11,
-                          color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
+                          color: isDark
+                              ? Colors.grey.shade600
+                              : Colors.grey.shade500,
                         ),
                       ),
                   ],
@@ -759,7 +781,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
               // ✅ 3-DOT MENU BUTTON
               InkWell(
-                onTap: () => _showNotificationOptions(context, id, data, isDark),
+                onTap: () =>
+                    _showNotificationOptions(context, id, data, isDark),
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   padding: const EdgeInsets.all(6),

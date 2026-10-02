@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:findus_app/services/saved_service.dart';
 import 'package:findus_app/services/post_service.dart';
-import 'package:findus_app/services/firestore_chat_service.dart';
 import 'package:findus_app/services/profile_lock_service.dart';
 
 import 'package:findus_app/constants/app_colors.dart';
@@ -13,7 +12,6 @@ import 'package:findus_app/models/worker_model.dart';
 import 'package:findus_app/achievement/achievement_service.dart';
 import 'package:findus_app/badge/badge_model.dart';
 
-import 'package:findus_app/screens/tabs/chat_screen.dart';
 import 'package:findus_app/screens/auth/login_screen.dart';
 import 'package:findus_app/screens/profile/unified_profile_screen.dart';
 import 'package:findus_app/screens/profile/worker_job_details_screen.dart';
@@ -32,10 +30,10 @@ Future<void> showWorkerProfileBottomSheet({
   // ✅ UPDATED: POST TITLE (Selected Category - e.g., "ELECTRICIAN", "PLUMBER")
   // ════════════════════════════════════════════════════════════════════════════
 
-  String displayTitle = (data['roleLabel'] ??
-      data['roleKey'] ??
-      workerModel.userRole ??
-      'Worker').toString().toUpperCase();
+  String displayTitle =
+      (data['roleLabel'] ?? data['roleKey'] ?? workerModel.userRole ?? 'Worker')
+          .toString()
+          .toUpperCase();
 
   if (displayTitle.isEmpty) displayTitle = 'WORKER';
 
@@ -46,13 +44,15 @@ Future<void> showWorkerProfileBottomSheet({
   String ownerProfileImage = '';
 
   // Priority: ownerImage > profileImage > userImage > workerModel.image > data image
-  ownerProfileImage = (data['ownerImage'] ??
-      data['profileImage'] ??
-      data['userImage'] ??
-      workerModel.image ??
-      data['image'] ??
-      data['imageUrl'] ??
-      '').toString();
+  ownerProfileImage =
+      (data['ownerImage'] ??
+              data['profileImage'] ??
+              data['userImage'] ??
+              workerModel.image ??
+              data['image'] ??
+              data['imageUrl'] ??
+              '')
+          .toString();
 
   // Clean invalid values - let UniversalWorkerCard generate avatar
   if (ownerProfileImage.isEmpty ||
@@ -77,10 +77,12 @@ Future<void> showWorkerProfileBottomSheet({
 
       if (userDoc.exists) {
         final userData = userDoc.data() ?? {};
-        ownerProfileImage = (userData['profileImage'] ??
-            userData['image'] ??
-            userData['photoUrl'] ??
-            '').toString();
+        ownerProfileImage =
+            (userData['profileImage'] ??
+                    userData['image'] ??
+                    userData['photoUrl'] ??
+                    '')
+                .toString();
       }
     } catch (e) {
       debugPrint("⚠️ Could not fetch owner image: $e");
@@ -91,10 +93,14 @@ Future<void> showWorkerProfileBottomSheet({
   // OTHER DATA (unchanged)
   // ════════════════════════════════════════════════════════════════════════════
 
-  // Owner Name (for chat & avatar generation)
+  // Owner name for avatar generation
   String ownerName = workerModel.name.isNotEmpty
       ? workerModel.name
-      : (data['ownerName'] ?? data['name'] ?? data['workerName'] ?? 'Unknown User').toString();
+      : (data['ownerName'] ??
+                data['name'] ??
+                data['workerName'] ??
+                'Unknown User')
+            .toString();
 
   // Role (subtitle)
   final String displayRole = workerModel.userRole.isNotEmpty
@@ -104,7 +110,8 @@ Future<void> showWorkerProfileBottomSheet({
   // Address
   final String displayAddress = workerModel.location.isNotEmpty
       ? workerModel.location
-      : (data['address'] ?? data['location'] ?? 'Location not available').toString();
+      : (data['address'] ?? data['location'] ?? 'Location not available')
+            .toString();
 
   // ════════════════════════════════════════════════════════════════════════════
   // LOGIN CHECK HELPER
@@ -116,7 +123,9 @@ Future<void> showWorkerProfileBottomSheet({
       showDialog(
         context: ctx,
         builder: (dialogCtx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: const Text("Login Required"),
           content: const Text("You need to login to access this feature."),
           actions: [
@@ -128,7 +137,10 @@ Future<void> showWorkerProfileBottomSheet({
               onPressed: () {
                 Navigator.pop(dialogCtx);
                 Navigator.pop(ctx);
-                Navigator.push(ctx, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                Navigator.push(
+                  ctx,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.brandMain,
@@ -148,11 +160,15 @@ Future<void> showWorkerProfileBottomSheet({
   // SUGGESTIONS (Exclude Current)
   // ════════════════════════════════════════════════════════════════════════════
 
-  final currentId = (data['ownerId'] ?? data['id'] ?? workerModel.uid).toString();
-  final suggestions = allWorkers.where((w) {
-    final wId = (w['ownerId'] ?? w['id'] ?? '').toString();
-    return wId.isNotEmpty && wId != currentId;
-  }).take(5).toList();
+  final currentId = (data['ownerId'] ?? data['id'] ?? workerModel.uid)
+      .toString();
+  final suggestions = allWorkers
+      .where((w) {
+        final wId = (w['ownerId'] ?? w['id'] ?? '').toString();
+        return wId.isNotEmpty && wId != currentId;
+      })
+      .take(5)
+      .toList();
 
   // ════════════════════════════════════════════════════════════════════════════
   // ACTION HANDLERS
@@ -178,7 +194,8 @@ Future<void> showWorkerProfileBottomSheet({
 
     rootNav.push(
       MaterialPageRoute(
-        builder: (_) => UnifiedProfileScreen(uid: uid, isOwner: false, showBack: true),
+        builder: (_) =>
+            UnifiedProfileScreen(uid: uid, isOwner: false, showBack: true),
       ),
     );
   }
@@ -188,9 +205,9 @@ Future<void> showWorkerProfileBottomSheet({
 
     final postId = workerModel.postId?.toString().trim() ?? '';
     if (postId.isEmpty) {
-      ScaffoldMessenger.of(rootNav.context).showSnackBar(
-        const SnackBar(content: Text("No post found.")),
-      );
+      ScaffoldMessenger.of(
+        rootNav.context,
+      ).showSnackBar(const SnackBar(content: Text("No post found.")));
       return;
     }
 
@@ -227,11 +244,13 @@ Future<void> showWorkerProfileBottomSheet({
               ? BadgeLevel.gold
               : (completedJobs >= 100 ? BadgeLevel.silver : BadgeLevel.bronze);
 
-          final isVerified = data['verified'] == true || data['isVerified'] == true;
+          final isVerified =
+              data['verified'] == true || data['isVerified'] == true;
           final isTrusted = ratingVal >= 4.2 && completedJobs >= 100;
           final isTopRated = ratingVal >= 4.8;
           final reviewsStr = (data['reviews'] ?? "0").toString();
-          final priceStr = (data['price'] ?? data['priceLabel'] ?? "Negotiable").toString();
+          final priceStr = (data['price'] ?? data['priceLabel'] ?? "Negotiable")
+              .toString();
 
           return DraggableScrollableSheet(
             initialChildSize: 0.65,
@@ -240,14 +259,22 @@ Future<void> showWorkerProfileBottomSheet({
             expand: false,
             builder: (scrollCtx, controller) {
               final isDark = Theme.of(scrollCtx).brightness == Brightness.dark;
-              final bgColor = isDark ? const Color(0xFF1E1E1E) : AppColors.bgBlue;
-              final handleColor = isDark ? Colors.grey[700]! : Colors.grey[400]!;
-              final sectionTitleColor = isDark ? Colors.white70 : Colors.black87;
+              final bgColor = isDark
+                  ? const Color(0xFF1E1E1E)
+                  : AppColors.bgBlue;
+              final handleColor = isDark
+                  ? Colors.grey[700]!
+                  : Colors.grey[400]!;
+              final sectionTitleColor = isDark
+                  ? Colors.white70
+                  : Colors.black87;
 
               return Container(
                 decoration: BoxDecoration(
                   color: bgColor,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                 ),
                 child: ListView(
                   controller: controller,
@@ -298,32 +325,9 @@ Future<void> showWorkerProfileBottomSheet({
                       onSaveTap: () async {
                         if (!checkLogin(context)) return;
                         await SavedService.toggleSave(data);
-                        setSheetState(() => isSaved = SavedService.isSaved(data));
-                      },
-
-                      onChatTap: () async {
-                        if (!checkLogin(context)) return;
-
-                        final otherUid = workerModel.uid.trim();
-                        if (otherUid.isEmpty) return;
-
-                        try {
-                          final convId = await FirestoreChatService.getOrCreateConversation(otherUserId: otherUid);
-                          if (rootNav.canPop()) rootNav.pop();
-
-                          rootNav.push(
-                            MaterialPageRoute(
-                              builder: (_) => ChatScreen(
-                                conversationId: convId,
-                                userName: ownerName, // ✅ Use owner name for chat
-                                userRole: displayRole,
-                                userImage: ownerProfileImage,
-                              ),
-                            ),
-                          );
-                        } catch (e) {
-                          debugPrint("Chat Error: $e");
-                        }
+                        setSheetState(
+                          () => isSaved = SavedService.isSaved(data),
+                        );
                       },
                     ),
 
@@ -347,21 +351,28 @@ Future<void> showWorkerProfileBottomSheet({
                       Column(
                         children: suggestions.map((s) {
                           final sRating = AchievementService.getRating(s);
-                          final sCompleted = AchievementService.getCompletedCount(s);
-                          final sId = (s['ownerId'] ?? s['id'] ?? '').toString();
+                          final sCompleted =
+                              AchievementService.getCompletedCount(s);
+                          final sId = (s['ownerId'] ?? s['id'] ?? '')
+                              .toString();
 
                           // ✅ SUGGESTION CARD: Post Title (Selected Category)
-                          String sTitle = (s['roleLabel'] ??
-                              s['roleKey'] ??
-                              s['role'] ??
-                              'Worker').toString().toUpperCase();
+                          String sTitle =
+                              (s['roleLabel'] ??
+                                      s['roleKey'] ??
+                                      s['role'] ??
+                                      'Worker')
+                                  .toString()
+                                  .toUpperCase();
 
                           // ✅ SUGGESTION CARD: Owner's Profile Image
-                          String sOwnerImage = (s['ownerImage'] ??
-                              s['profileImage'] ??
-                              s['userImage'] ??
-                              s['image'] ??
-                              '').toString();
+                          String sOwnerImage =
+                              (s['ownerImage'] ??
+                                      s['profileImage'] ??
+                                      s['userImage'] ??
+                                      s['image'] ??
+                                      '')
+                                  .toString();
 
                           // Clean invalid image URLs
                           if (sOwnerImage.isEmpty ||
@@ -371,10 +382,15 @@ Future<void> showWorkerProfileBottomSheet({
                           }
 
                           // Owner name for avatar generation
-                          String sOwnerName = (s['ownerName'] ?? s['name'] ?? 'User').toString();
+                          String sOwnerName =
+                              (s['ownerName'] ?? s['name'] ?? 'User')
+                                  .toString();
 
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 6,
+                            ),
                             child: UniversalWorkerCard(
                               id: sId,
 
@@ -384,12 +400,18 @@ Future<void> showWorkerProfileBottomSheet({
                               // ✅ IMAGE = OWNER'S PROFILE IMAGE
                               imageUrl: sOwnerImage,
 
-                              role: (s['role'] ?? s['ownerRole'] ?? 'Worker').toString(),
-                              address: (s['address'] ?? 'Bangladesh').toString(),
+                              role: (s['role'] ?? s['ownerRole'] ?? 'Worker')
+                                  .toString(),
+                              address: (s['address'] ?? 'Bangladesh')
+                                  .toString(),
                               rating: sRating.toStringAsFixed(1),
                               completed: sCompleted.toString(),
                               reviews: (s['reviews'] ?? "0").toString(),
-                              price: (s['price'] ?? s['priceLabel'] ?? "Negotiable").toString(),
+                              price:
+                                  (s['price'] ??
+                                          s['priceLabel'] ??
+                                          "Negotiable")
+                                      .toString(),
                               time: "Available now",
                               isVerifiedWorker: true,
 
@@ -403,11 +425,16 @@ Future<void> showWorkerProfileBottomSheet({
                                   workerModel: Worker(
                                     uid: sId,
                                     postId: (s['id'] ?? '').toString(),
-                                    name: sOwnerName, // Owner name for chat
-                                    userRole: (s['role'] ?? 'finder').toString(),
+                                    name: sOwnerName,
+                                    userRole: (s['role'] ?? 'finder')
+                                        .toString(),
                                     image: sOwnerImage,
                                     location: (s['address'] ?? '').toString(),
-                                    priceText: (s['price'] ?? s['priceLabel'] ?? 'Negotiable').toString(),
+                                    priceText:
+                                        (s['price'] ??
+                                                s['priceLabel'] ??
+                                                'Negotiable')
+                                            .toString(),
                                     rating: sRating,
                                     kycCompleted: true,
                                   ),

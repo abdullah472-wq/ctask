@@ -34,9 +34,10 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
       CurvedAnimation(parent: _animController, curve: Curves.elasticOut),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeIn),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeIn));
 
     _animController.forward();
   }
@@ -84,7 +85,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
 
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
+        (route) => false,
       );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
@@ -95,7 +96,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
         );
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const LoginScreen()),
-              (route) => false,
+          (route) => false,
         );
       } else {
         _showErrorSnackBar(e.message ?? "Authentication error occurred.");
@@ -192,11 +193,6 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
                     textColor: textColor,
                   ),
                   _buildWarningItem(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    text: "Chat history will be lost",
-                    textColor: textColor,
-                  ),
-                  _buildWarningItem(
                     icon: Icons.military_tech_rounded,
                     text: "Badges and points removed",
                     textColor: textColor,
@@ -214,7 +210,9 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
-                          color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                          color: isDark
+                              ? Colors.grey.shade700
+                              : Colors.grey.shade300,
                           width: 1.5,
                         ),
                         shape: RoundedRectangleBorder(
@@ -276,10 +274,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 12,
-                color: textColor.withOpacity(0.8),
-              ),
+              style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.8)),
             ),
           ),
         ],
@@ -294,7 +289,9 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
           children: [
             const Icon(Icons.error_outline, color: Colors.white, size: 20),
             const SizedBox(width: 10),
-            Expanded(child: Text(message, style: const TextStyle(fontSize: 13))),
+            Expanded(
+              child: Text(message, style: const TextStyle(fontSize: 13)),
+            ),
           ],
         ),
         backgroundColor: Colors.red.shade600,
@@ -310,9 +307,15 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+            const Icon(
+              Icons.check_circle_outline,
+              color: Colors.white,
+              size: 20,
+            ),
             const SizedBox(width: 10),
-            Expanded(child: Text(message, style: const TextStyle(fontSize: 13))),
+            Expanded(
+              child: Text(message, style: const TextStyle(fontSize: 13)),
+            ),
           ],
         ),
         backgroundColor: Colors.green.shade600,
@@ -420,7 +423,9 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+                                color: Colors.black.withOpacity(
+                                  isDark ? 0.3 : 0.08,
+                                ),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -446,11 +451,6 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
                               _buildDeleteItem(
                                 icon: Icons.work_off_rounded,
                                 title: "Job History",
-                                textColor: textColor,
-                              ),
-                              _buildDeleteItem(
-                                icon: Icons.chat_bubble_outline_rounded,
-                                title: "Messages & Chats",
                                 textColor: textColor,
                               ),
                               _buildDeleteItem(
@@ -484,29 +484,32 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen>
                             ),
                             child: _isDeleting
                                 ? const SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
-                              ),
-                            )
+                                    height: 22,
+                                    width: 22,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
                                 : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(Icons.delete_forever_rounded, size: 20),
-                                SizedBox(width: 8),
-                                Text(
-                                  "DELETE MY ACCOUNT",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    letterSpacing: 0.5,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: const [
+                                      Icon(
+                                        Icons.delete_forever_rounded,
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        "DELETE MY ACCOUNT",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
                           ),
                         ),
 

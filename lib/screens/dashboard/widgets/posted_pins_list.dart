@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:findus_app/constants/app_colors.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../profile/earn_post_screen.dart';
@@ -36,13 +35,14 @@ class PostedPinsList extends StatelessWidget {
   }
 
   Widget _buildContent(
-      BuildContext context,
-      AsyncSnapshot<QuerySnapshot> snapshot,
-      bool isDark,
-      ) {
+    BuildContext context,
+    AsyncSnapshot<QuerySnapshot> snapshot,
+    bool isDark,
+  ) {
     if (snapshot.hasError) {
       final err = snapshot.error.toString();
-      final needsIndex = err.contains('FAILED_PRECONDITION') ||
+      final needsIndex =
+          err.contains('FAILED_PRECONDITION') ||
           err.toLowerCase().contains('index');
 
       return _buildErrorWidget(needsIndex ? 'Index required' : err, needsIndex);
@@ -189,10 +189,10 @@ class PostedPinsList extends StatelessWidget {
   }
 
   Widget _buildPinsList(
-      BuildContext context,
-      List<QueryDocumentSnapshot> docs,
-      bool isDark,
-      ) {
+    BuildContext context,
+    List<QueryDocumentSnapshot> docs,
+    bool isDark,
+  ) {
     return Column(
       children: docs.map((doc) {
         return _buildPinCard(context, doc, isDark);
@@ -201,10 +201,10 @@ class PostedPinsList extends StatelessWidget {
   }
 
   Widget _buildPinCard(
-      BuildContext context,
-      QueryDocumentSnapshot doc,
-      bool isDark,
-      ) {
+    BuildContext context,
+    QueryDocumentSnapshot doc,
+    bool isDark,
+  ) {
     final data = doc.data() as Map<String, dynamic>;
     final cardColor = isDark ? const Color(0xFF2C2C2C) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black87;
@@ -234,7 +234,7 @@ class PostedPinsList extends StatelessWidget {
             color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 8,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Material(
@@ -361,9 +361,6 @@ class PostedPinsList extends StatelessWidget {
                       ),
                       onSelected: (value) {
                         switch (value) {
-                          case 'map':
-                            _handlePinTap(context, data);
-                            break;
                           case 'share':
                             _sharePin(context, data);
                             break;
@@ -380,16 +377,6 @@ class PostedPinsList extends StatelessWidget {
                       },
                       itemBuilder: (ctx) => [
                         const PopupMenuItem(
-                          value: 'map',
-                          child: Row(
-                            children: [
-                              Icon(Icons.map_outlined, color: Colors.blue, size: 20),
-                              SizedBox(width: 12),
-                              Text('View on Map'),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
                           value: 'share',
                           child: Row(
                             children: [
@@ -403,7 +390,11 @@ class PostedPinsList extends StatelessWidget {
                           value: 'edit',
                           child: Row(
                             children: [
-                              Icon(Icons.edit_outlined, color: Colors.orange, size: 20),
+                              Icon(
+                                Icons.edit_outlined,
+                                color: Colors.orange,
+                                size: 20,
+                              ),
                               SizedBox(width: 12),
                               Text('Edit'),
                             ],
@@ -414,7 +405,9 @@ class PostedPinsList extends StatelessWidget {
                           child: Row(
                             children: [
                               Icon(
-                                isActive ? Icons.pause_circle_outline : Icons.play_circle_outline,
+                                isActive
+                                    ? Icons.pause_circle_outline
+                                    : Icons.play_circle_outline,
                                 color: isActive ? Colors.amber : Colors.green,
                                 size: 20,
                               ),
@@ -428,9 +421,16 @@ class PostedPinsList extends StatelessWidget {
                           value: 'delete',
                           child: Row(
                             children: [
-                              Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                              Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                                size: 20,
+                              ),
                               SizedBox(width: 12),
-                              Text('Delete', style: TextStyle(color: Colors.red)),
+                              Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ],
                           ),
                         ),
@@ -476,7 +476,8 @@ class PostedPinsList extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => MyPostApplicationsScreen(postId: doc.id),
+                            builder: (_) =>
+                                MyPostApplicationsScreen(postId: doc.id),
                           ),
                         );
                       },
@@ -484,7 +485,9 @@ class PostedPinsList extends StatelessWidget {
                       label: Text('View $applicationsCount Applications'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.brandMain,
-                        side: BorderSide(color: AppColors.brandMain.withOpacity(0.5)),
+                        side: BorderSide(
+                          color: AppColors.brandMain.withOpacity(0.5),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -505,7 +508,8 @@ class PostedPinsList extends StatelessWidget {
     IconData icon = Icons.work_outline;
     Color color = AppColors.brandMain;
 
-    final String text = (data['title'] ?? '').toString().toLowerCase() +
+    final String text =
+        (data['title'] ?? '').toString().toLowerCase() +
         (data['roleLabel'] ?? '').toString().toLowerCase();
 
     if (text.contains('plumb')) {
@@ -563,47 +567,17 @@ class PostedPinsList extends StatelessWidget {
     );
   }
 
-  // ✅ Open location in Google Maps
-  Future<void> _handlePinTap(
-      BuildContext context,
-      Map<String, dynamic> data,
-      ) async {
-    final double? lat = data['latitude'];
-    final double? lng = data['longitude'];
-
-    if (lat != null && lng != null) {
-      final Uri googleMapsUrl = Uri.parse(
-        "https://www.google.com/maps/search/?api=1&query=$lat,$lng",
-      );
-
-      try {
-        if (await canLaunchUrl(googleMapsUrl)) {
-          await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
-        } else {
-          _showError(context, "Could not open Maps application.");
-        }
-      } catch (e) {
-        _showError(context, "Error opening map: $e");
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Location for '${data['title']}' not available.",
-          ),
-          backgroundColor: Colors.orange,
-        ),
-      );
-    }
-  }
-
   // ✅ Share pin
-  Future<void> _sharePin(BuildContext context, Map<String, dynamic> data) async {
+  Future<void> _sharePin(
+    BuildContext context,
+    Map<String, dynamic> data,
+  ) async {
     final title = data['title'] ?? 'Job Post';
     final address = data['address'] ?? 'Location not set';
     final price = data['priceLabel'] ?? 'N/A';
 
-    final shareText = '''
+    final shareText =
+        '''
 🔧 $title
 
 📍 Location: $address
@@ -621,10 +595,10 @@ Apply now on FindUs App!
 
   // ✅ Edit pin
   Future<void> _editPin(
-      BuildContext context,
-      String pinId,
-      Map<String, dynamic> data,
-      ) async {
+    BuildContext context,
+    String pinId,
+    Map<String, dynamic> data,
+  ) async {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('📝 Edit feature coming soon!'),
@@ -636,15 +610,14 @@ Apply now on FindUs App!
 
   // ✅ Toggle post status
   Future<void> _toggleStatus(
-      BuildContext context,
-      String pinId,
-      bool currentStatus,
-      ) async {
+    BuildContext context,
+    String pinId,
+    bool currentStatus,
+  ) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('posts')
-          .doc(pinId)
-          .update({'isActive': !currentStatus});
+      await FirebaseFirestore.instance.collection('posts').doc(pinId).update({
+        'isActive': !currentStatus,
+      });
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -680,13 +653,8 @@ Apply now on FindUs App!
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            child: const Text(
-              "Delete",
-              style: TextStyle(color: Colors.white),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text("Delete", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -694,7 +662,10 @@ Apply now on FindUs App!
 
     if (confirm == true) {
       try {
-        await FirebaseFirestore.instance.collection('posts').doc(pinId).delete();
+        await FirebaseFirestore.instance
+            .collection('posts')
+            .doc(pinId)
+            .delete();
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -714,10 +685,7 @@ Apply now on FindUs App!
 
   void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 }

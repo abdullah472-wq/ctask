@@ -10,14 +10,14 @@ class NotificationControlPage extends StatefulWidget {
   const NotificationControlPage({super.key});
 
   @override
-  State<NotificationControlPage> createState() => _NotificationControlPageState();
+  State<NotificationControlPage> createState() =>
+      _NotificationControlPageState();
 }
 
 class _NotificationControlPageState extends State<NotificationControlPage> {
   // Master + per-category flags
   bool _allEnabled = true;
   bool _jobsEnabled = true;
-  bool _chatEnabled = true;
   bool _promoEnabled = true;
   bool _emergencyEnabled = true;
 
@@ -33,7 +33,6 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
 
   static const _keyAll = 'notif_all';
   static const _keyJobs = 'notif_jobs';
-  static const _keyChat = 'notif_chat';
   static const _keyPromo = 'notif_promo';
   static const _keyEmergency = 'notif_emergency';
   static const _keySound = 'notif_sound';
@@ -55,7 +54,6 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
     setState(() {
       _allEnabled = prefs.getBool(_keyAll) ?? true;
       _jobsEnabled = prefs.getBool(_keyJobs) ?? true;
-      _chatEnabled = prefs.getBool(_keyChat) ?? true;
       _promoEnabled = prefs.getBool(_keyPromo) ?? true;
       _emergencyEnabled = prefs.getBool(_keyEmergency) ?? true;
       _soundEnabled = prefs.getBool(_keySound) ?? true;
@@ -66,7 +64,10 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
       // Load quiet hours times
       final startMinutes = prefs.getInt(_keyQuietStart) ?? 22 * 60;
       final endMinutes = prefs.getInt(_keyQuietEnd) ?? 7 * 60;
-      _quietStart = TimeOfDay(hour: startMinutes ~/ 60, minute: startMinutes % 60);
+      _quietStart = TimeOfDay(
+        hour: startMinutes ~/ 60,
+        minute: startMinutes % 60,
+      );
       _quietEnd = TimeOfDay(hour: endMinutes ~/ 60, minute: endMinutes % 60);
 
       _loading = false;
@@ -77,14 +78,16 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyAll, _allEnabled);
     await prefs.setBool(_keyJobs, _jobsEnabled);
-    await prefs.setBool(_keyChat, _chatEnabled);
     await prefs.setBool(_keyPromo, _promoEnabled);
     await prefs.setBool(_keyEmergency, _emergencyEnabled);
     await prefs.setBool(_keySound, _soundEnabled);
     await prefs.setBool(_keyVibration, _vibrationEnabled);
     await prefs.setBool(_keyPreview, _previewEnabled);
     await prefs.setBool(_keyQuietHours, _quietHoursEnabled);
-    await prefs.setInt(_keyQuietStart, _quietStart.hour * 60 + _quietStart.minute);
+    await prefs.setInt(
+      _keyQuietStart,
+      _quietStart.hour * 60 + _quietStart.minute,
+    );
     await prefs.setInt(_keyQuietEnd, _quietEnd.hour * 60 + _quietEnd.minute);
 
     // ✅ Update Firebase topics based on settings
@@ -100,12 +103,6 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
         await messaging.subscribeToTopic('jobs');
       } else {
         await messaging.unsubscribeFromTopic('jobs');
-      }
-
-      if (_allEnabled && _chatEnabled) {
-        await messaging.subscribeToTopic('chat');
-      } else {
-        await messaging.unsubscribeFromTopic('chat');
       }
 
       if (_allEnabled && _promoEnabled) {
@@ -129,7 +126,6 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
       _allEnabled = value;
       if (!value) {
         _jobsEnabled = false;
-        _chatEnabled = false;
         _promoEnabled = false;
         _emergencyEnabled = false;
       }
@@ -137,19 +133,13 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
     _savePrefs();
   }
 
-  void _updateCategory({
-    bool? jobs,
-    bool? chat,
-    bool? promo,
-    bool? emergency,
-  }) {
+  void _updateCategory({bool? jobs, bool? promo, bool? emergency}) {
     setState(() {
       if (jobs != null) _jobsEnabled = jobs;
-      if (chat != null) _chatEnabled = chat;
       if (promo != null) _promoEnabled = promo;
       if (emergency != null) _emergencyEnabled = emergency;
 
-      final anyOn = _jobsEnabled || _chatEnabled || _promoEnabled || _emergencyEnabled;
+      final anyOn = _jobsEnabled || _promoEnabled || _emergencyEnabled;
       _allEnabled = anyOn;
     });
     _savePrefs();
@@ -163,9 +153,7 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.brandMain,
-            ),
+            colorScheme: ColorScheme.light(primary: AppColors.brandMain),
           ),
           child: child!,
         );
@@ -225,63 +213,73 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
       bodyPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       body: _loading
           ? const Center(
-        child: CircularProgressIndicator(color: AppColors.brandMain),
-      )
+              child: CircularProgressIndicator(color: AppColors.brandMain),
+            )
           : Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ════════════════════════════════════════════════════════════
-          // MASTER SWITCH
-          // ════════════════════════════════════════════════════════════
-          _buildMasterSwitch(cardColor, textColor, subTextColor),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ════════════════════════════════════════════════════════════
+                // MASTER SWITCH
+                // ════════════════════════════════════════════════════════════
+                _buildMasterSwitch(cardColor, textColor, subTextColor),
 
-          const SizedBox(height: 25),
-          _buildSectionTitle("NOTIFICATION TYPES", subTextColor),
+                const SizedBox(height: 25),
+                _buildSectionTitle("NOTIFICATION TYPES", subTextColor),
 
-          // ════════════════════════════════════════════════════════════
-          // CATEGORY SWITCHES
-          // ════════════════════════════════════════════════════════════
-          _buildCategorySwitches(cardColor, textColor, subTextColor, isDark),
+                // ════════════════════════════════════════════════════════════
+                // CATEGORY SWITCHES
+                // ════════════════════════════════════════════════════════════
+                _buildCategorySwitches(
+                  cardColor,
+                  textColor,
+                  subTextColor,
+                  isDark,
+                ),
 
-          const SizedBox(height: 25),
-          _buildSectionTitle("NOTIFICATION SETTINGS", subTextColor),
+                const SizedBox(height: 25),
+                _buildSectionTitle("NOTIFICATION SETTINGS", subTextColor),
 
-          // ════════════════════════════════════════════════════════════
-          // ✅ NEW: SOUND & VIBRATION SETTINGS
-          // ════════════════════════════════════════════════════════════
-          _buildNotificationSettings(cardColor, textColor, subTextColor, isDark),
+                // ════════════════════════════════════════════════════════════
+                // ✅ NEW: SOUND & VIBRATION SETTINGS
+                // ════════════════════════════════════════════════════════════
+                _buildNotificationSettings(
+                  cardColor,
+                  textColor,
+                  subTextColor,
+                  isDark,
+                ),
 
-          const SizedBox(height: 25),
-          _buildSectionTitle("QUIET HOURS", subTextColor),
+                const SizedBox(height: 25),
+                _buildSectionTitle("QUIET HOURS", subTextColor),
 
-          // ════════════════════════════════════════════════════════════
-          // ✅ NEW: QUIET HOURS
-          // ════════════════════════════════════════════════════════════
-          _buildQuietHours(cardColor, textColor, subTextColor, isDark),
+                // ════════════════════════════════════════════════════════════
+                // ✅ NEW: QUIET HOURS
+                // ════════════════════════════════════════════════════════════
+                _buildQuietHours(cardColor, textColor, subTextColor, isDark),
 
-          const SizedBox(height: 25),
+                const SizedBox(height: 25),
 
-          // ════════════════════════════════════════════════════════════
-          // ✅ NEW: TEST NOTIFICATION BUTTON
-          // ════════════════════════════════════════════════════════════
-          _buildTestNotificationButton(cardColor, textColor),
+                // ════════════════════════════════════════════════════════════
+                // ✅ NEW: TEST NOTIFICATION BUTTON
+                // ════════════════════════════════════════════════════════════
+                _buildTestNotificationButton(cardColor, textColor),
 
-          const SizedBox(height: 15),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              "Note: You can also control app-level notification permissions directly from your device settings.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                color: subTextColor,
-                fontStyle: FontStyle.italic,
-              ),
+                const SizedBox(height: 15),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    "Note: You can also control app-level notification permissions directly from your device settings.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: subTextColor,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
+              ],
             ),
-          ),
-          const SizedBox(height: 30),
-        ],
-      ),
     );
   }
 
@@ -289,7 +287,11 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
   // UI BUILDERS
   // ════════════════════════════════════════════════════════════════════════════
 
-  Widget _buildMasterSwitch(Color cardColor, Color textColor, Color subTextColor) {
+  Widget _buildMasterSwitch(
+    Color cardColor,
+    Color textColor,
+    Color subTextColor,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
@@ -353,11 +355,11 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
   }
 
   Widget _buildCategorySwitches(
-      Color cardColor,
-      Color textColor,
-      Color subTextColor,
-      bool isDark,
-      ) {
+    Color cardColor,
+    Color textColor,
+    Color subTextColor,
+    bool isDark,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
@@ -385,18 +387,6 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
           ),
           _buildDivider(isDark),
           _buildSwitchTile(
-            icon: Icons.chat_bubble_outline_rounded,
-            title: "Chat Messages",
-            subtitle: "Messages, replies and updates.",
-            value: _chatEnabled && _allEnabled,
-            onChanged: _allEnabled ? (v) => _updateCategory(chat: v) : null,
-            color: Colors.green,
-            textColor: textColor,
-            subTextColor: subTextColor,
-            isDark: isDark,
-          ),
-          _buildDivider(isDark),
-          _buildSwitchTile(
             icon: Icons.campaign_rounded,
             title: "Updates & Promo",
             subtitle: "News, offers and feature tips.",
@@ -413,7 +403,9 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
             title: "Emergency Alerts",
             subtitle: "Safety or emergency notifications.",
             value: _emergencyEnabled && _allEnabled,
-            onChanged: _allEnabled ? (v) => _updateCategory(emergency: v) : null,
+            onChanged: _allEnabled
+                ? (v) => _updateCategory(emergency: v)
+                : null,
             color: Colors.redAccent,
             textColor: textColor,
             subTextColor: subTextColor,
@@ -426,11 +418,11 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
 
   // ✅ NEW: Sound & Vibration Settings
   Widget _buildNotificationSettings(
-      Color cardColor,
-      Color textColor,
-      Color subTextColor,
-      bool isDark,
-      ) {
+    Color cardColor,
+    Color textColor,
+    Color subTextColor,
+    bool isDark,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
@@ -452,9 +444,9 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
             value: _soundEnabled && _allEnabled,
             onChanged: _allEnabled
                 ? (v) {
-              setState(() => _soundEnabled = v);
-              _savePrefs();
-            }
+                    setState(() => _soundEnabled = v);
+                    _savePrefs();
+                  }
                 : null,
             color: Colors.purple,
             textColor: textColor,
@@ -469,9 +461,9 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
             value: _vibrationEnabled && _allEnabled,
             onChanged: _allEnabled
                 ? (v) {
-              setState(() => _vibrationEnabled = v);
-              _savePrefs();
-            }
+                    setState(() => _vibrationEnabled = v);
+                    _savePrefs();
+                  }
                 : null,
             color: Colors.teal,
             textColor: textColor,
@@ -486,9 +478,9 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
             value: _previewEnabled && _allEnabled,
             onChanged: _allEnabled
                 ? (v) {
-              setState(() => _previewEnabled = v);
-              _savePrefs();
-            }
+                    setState(() => _previewEnabled = v);
+                    _savePrefs();
+                  }
                 : null,
             color: Colors.indigo,
             textColor: textColor,
@@ -502,11 +494,11 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
 
   // ✅ NEW: Quiet Hours Section
   Widget _buildQuietHours(
-      Color cardColor,
-      Color textColor,
-      Color subTextColor,
-      bool isDark,
-      ) {
+    Color cardColor,
+    Color textColor,
+    Color subTextColor,
+    bool isDark,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
@@ -591,19 +583,11 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
         decoration: BoxDecoration(
           color: isDark ? Colors.black26 : Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppColors.brandMain.withOpacity(0.3),
-          ),
+          border: Border.all(color: AppColors.brandMain.withOpacity(0.3)),
         ),
         child: Column(
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                color: subTextColor,
-              ),
-            ),
+            Text(label, style: TextStyle(fontSize: 11, color: subTextColor)),
             const SizedBox(height: 4),
             Text(
               time.format(context),
@@ -719,7 +703,9 @@ class _NotificationControlPageState extends State<NotificationControlPage> {
         subtitle,
         style: TextStyle(
           fontSize: 11,
-          color: onChanged == null ? subTextColor.withOpacity(0.5) : subTextColor,
+          color: onChanged == null
+              ? subTextColor.withOpacity(0.5)
+              : subTextColor,
         ),
       ),
     );

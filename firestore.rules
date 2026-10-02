@@ -213,25 +213,6 @@ service cloud.firestore {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // 10. CHAT / CONVERSATIONS
-    // ═══════════════════════════════════════════════════════════════════════════
-    match /conversations/{conversationId} {
-      allow read: if isSignedIn() && (
-        request.auth.uid in resource.data.participants ||
-        isAdmin()
-      );
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && (
-        request.auth.uid in resource.data.participants
-      );
-      allow delete: if isAdmin();
-
-      match /messages/{messageId} {
-        allow read, write: if isSignedIn();
-      }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
     // 11. REVIEWS
     // ═══════════════════════════════════════════════════════════════════════════
     match /reviews/{reviewId} {
@@ -411,21 +392,6 @@ service cloud.firestore {
     match /post_analytics/{postId} {
       allow read: if isSignedIn();
       allow write: if isSignedIn();
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // 22. PROMOTIONS ✅ NEW
-    // ═══════════════════════════════════════════════════════════════════════════
-    match /promotions/{promoId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /user_promotions/{docId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow delete: if isAdmin();
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

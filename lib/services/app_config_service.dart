@@ -16,7 +16,6 @@ class AppConfigService {
   static bool isAppInMaintenance = false;
   static bool isSignupDisabled = false;
   static bool isPostingDisabled = false;
-  static bool isChatDisabled = false;
   static bool isPaymentDisabled = false;
 
   static String minAppVersion = '1.0.0';
@@ -88,19 +87,19 @@ class AppConfigService {
         .snapshots()
         .listen(
           (doc) {
-        if (doc.exists) {
-          debugPrint("🔄 Config updated from Firestore");
-          _updateConfigFromDoc(doc);
-          _cacheConfig(doc.data() ?? {});
+            if (doc.exists) {
+              debugPrint("🔄 Config updated from Firestore");
+              _updateConfigFromDoc(doc);
+              _cacheConfig(doc.data() ?? {});
 
-          // Notify UI
-          configNotifier.value = !configNotifier.value;
-        }
-      },
-      onError: (error) {
-        debugPrint("❌ Config listener error: $error");
-      },
-    );
+              // Notify UI
+              configNotifier.value = !configNotifier.value;
+            }
+          },
+          onError: (error) {
+            debugPrint("❌ Config listener error: $error");
+          },
+        );
   }
 
   /// Update in-memory config from Firestore doc
@@ -111,7 +110,6 @@ class AppConfigService {
     isAppInMaintenance = data['isAppInMaintenance'] == true;
     isSignupDisabled = data['isSignupDisabled'] == true;
     isPostingDisabled = data['isPostingDisabled'] == true;
-    isChatDisabled = data['isChatDisabled'] == true;
     isPaymentDisabled = data['isPaymentDisabled'] == true;
 
     // Version Control
@@ -120,8 +118,10 @@ class AppConfigService {
 
     // Messages
     maintenanceNote = (data['maintenanceNote'] ?? '').toString();
-    updateMessage = (data['updateMessage'] ??
-        'A new version is available. Please update for the best experience.').toString();
+    updateMessage =
+        (data['updateMessage'] ??
+                'A new version is available. Please update for the best experience.')
+            .toString();
 
     // Feature Flags
     enableNewFeatures = data['enableNewFeatures'] != false;
@@ -140,9 +140,15 @@ class AppConfigService {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      await prefs.setBool('isAppInMaintenance', data['isAppInMaintenance'] == true);
+      await prefs.setBool(
+        'isAppInMaintenance',
+        data['isAppInMaintenance'] == true,
+      );
       await prefs.setBool('isSignupDisabled', data['isSignupDisabled'] == true);
-      await prefs.setBool('isPostingDisabled', data['isPostingDisabled'] == true);
+      await prefs.setBool(
+        'isPostingDisabled',
+        data['isPostingDisabled'] == true,
+      );
       await prefs.setString('minAppVersion', data['minAppVersion'] ?? '1.0.0');
       await prefs.setString('maintenanceNote', data['maintenanceNote'] ?? '');
 
@@ -242,8 +248,6 @@ class AppConfigService {
         return !isSignupDisabled;
       case 'posting':
         return !isPostingDisabled;
-      case 'chat':
-        return !isChatDisabled;
       case 'payment':
         return !isPaymentDisabled;
       case 'notifications':
@@ -264,8 +268,6 @@ class AppConfigService {
         return 'New signups are temporarily disabled. Please try again later.';
       case 'posting':
         return 'Job posting is temporarily disabled. Please try again later.';
-      case 'chat':
-        return 'Chat is temporarily disabled. Please try again later.';
       case 'payment':
         return 'Payments are temporarily disabled. Please try again later.';
       default:

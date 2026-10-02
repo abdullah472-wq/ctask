@@ -15,7 +15,8 @@ class NotificationService {
     required String toUserId,
     required String title,
     required String body,
-    required String type, // 'message', 'job', 'profile', 'review', 'admin', etc.
+    required String
+    type, // 'message', 'job', 'profile', 'review', 'admin', etc.
     String? relatedUserId,
     String? relatedPostId,
     Map<String, dynamic>? data,
@@ -29,15 +30,15 @@ class NotificationService {
           .doc(toUserId)
           .collection('notifications')
           .add({
-        'title': title,
-        'body': body,
-        'type': type,
-        'senderId': relatedUserId ?? currentUid ?? '',
-        'read': false,
-        'createdAt': FieldValue.serverTimestamp(),
-        'relatedPostId': relatedPostId,
-        'data': data ?? {},
-      });
+            'title': title,
+            'body': body,
+            'type': type,
+            'senderId': relatedUserId ?? currentUid ?? '',
+            'read': false,
+            'createdAt': FieldValue.serverTimestamp(),
+            'relatedPostId': relatedPostId,
+            'data': data ?? {},
+          });
 
       // ✅ Increment unread counter
       await _incrementUnreadCount(toUserId);
@@ -149,9 +150,7 @@ class NotificationService {
       await batch.commit();
 
       // Reset counter to 0
-      await _db.collection('users').doc(uid).update({
-        'unreadNotifications': 0,
-      });
+      await _db.collection('users').doc(uid).update({'unreadNotifications': 0});
 
       log("✅ All notifications marked as read for $uid");
     } catch (e) {
@@ -208,9 +207,7 @@ class NotificationService {
       await batch.commit();
 
       // Reset counter to 0
-      await _db.collection('users').doc(uid).update({
-        'unreadNotifications': 0,
-      });
+      await _db.collection('users').doc(uid).update({'unreadNotifications': 0});
 
       log("✅ All notifications deleted for $uid");
     } catch (e) {
@@ -279,8 +276,9 @@ class NotificationService {
       await sendNotificationToUser(
         toUserId: uid,
         title: 'Welcome to FindUs, $name!',
-        body: 'Thanks for joining the FindUs community.\n'
-            'You can complete your profile, explore jobs, and start chatting with other members right away.',
+        body:
+            'Thanks for joining the FindUs community.\n'
+            'You can complete your profile, explore jobs, and connect with local members right away.',
         type: 'welcome',
       );
 

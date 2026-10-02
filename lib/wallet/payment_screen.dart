@@ -11,7 +11,7 @@ import 'package:findus_app/constants/app_colors.dart';
 import 'package:findus_app/widgets/floating_scaffold.dart';
 import 'package:findus_app/screens/settings/activation_screen.dart';
 
-enum PaymentPurpose { subscription, profileBoost, workerPayment, supporterPayment }
+enum PaymentPurpose { subscription, workerPayment, supporterPayment }
 
 class ManualPaymentScreen extends StatefulWidget {
   final String planId;
@@ -128,7 +128,7 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
         ),
         content: const Text(
           "Your payment session has expired.\n\n"
-              "Please restart the payment process.",
+          "Please restart the payment process.",
         ),
         actions: [
           ElevatedButton(
@@ -136,7 +136,9 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
               Navigator.pop(ctx);
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.brandMain),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.brandMain,
+            ),
             child: const Text("OK", style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -210,7 +212,9 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
 
     try {
       final uid = user.uid;
-      final paymentRef = FirebaseFirestore.instance.collection('payment_requests').doc();
+      final paymentRef = FirebaseFirestore.instance
+          .collection('payment_requests')
+          .doc();
 
       await paymentRef.set({
         'id': paymentRef.id,
@@ -279,7 +283,9 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
       builder: (ctx) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -333,7 +339,11 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(methodData['icon'], color: methodData['color'], size: 20),
+                      Icon(
+                        methodData['icon'],
+                        color: methodData['color'],
+                        size: 20,
+                      ),
                       const SizedBox(width: 10),
                       Text(
                         methodData['number'],
@@ -548,7 +558,9 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
           return Center(
             child: Text(
               "No previous payments",
-              style: TextStyle(color: isDark ? Colors.grey : Colors.grey.shade600),
+              style: TextStyle(
+                color: isDark ? Colors.grey : Colors.grey.shade600,
+              ),
             ),
           );
         }
@@ -581,7 +593,9 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                color: isDark
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
@@ -639,7 +653,9 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: isActive ? AppColors.brandMain : (isDark ? Colors.grey[700] : Colors.grey[300]),
+            color: isActive
+                ? AppColors.brandMain
+                : (isDark ? Colors.grey[700] : Colors.grey[300]),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -670,7 +686,9 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
       child: Container(
         height: 2,
         margin: const EdgeInsets.only(bottom: 20),
-        color: isActive ? AppColors.brandMain : (isDark ? Colors.grey[700] : Colors.grey[300]),
+        color: isActive
+            ? AppColors.brandMain
+            : (isDark ? Colors.grey[700] : Colors.grey[300]),
       ),
     );
   }
@@ -722,7 +740,10 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.brandMain.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -743,8 +764,10 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text("Duration:", style: TextStyle(color: Colors.grey)),
-              Text("${widget.duration} month${widget.duration > 1 ? 's' : ''}",
-                  style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+              Text(
+                "${widget.duration} month${widget.duration > 1 ? 's' : ''}",
+                style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+              ),
             ],
           ),
         ],
@@ -756,7 +779,9 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: isDark ? Colors.amber.withOpacity(0.1) : Colors.amber.withOpacity(0.1),
+        color: isDark
+            ? Colors.amber.withOpacity(0.1)
+            : Colors.amber.withOpacity(0.1),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: Colors.amber.withOpacity(0.3)),
       ),
@@ -770,7 +795,10 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
                 SizedBox(width: 10),
                 Text(
                   "How to pay?",
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.brown),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.brown,
+                  ),
                 ),
               ],
             ),
@@ -896,7 +924,11 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
                     ),
                     // Copy Button
                     IconButton(
-                      icon: Icon(Icons.copy, color: methodData['color'], size: 18),
+                      icon: Icon(
+                        Icons.copy,
+                        color: methodData['color'],
+                        size: 18,
+                      ),
                       onPressed: () {
                         Clipboard.setData(
                           ClipboardData(text: methodData['number']),
@@ -922,7 +954,12 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
     );
   }
 
-  Widget _buildInputFields(bool isDark, Color cardColor, Color textColor, Color hintColor) {
+  Widget _buildInputFields(
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+    Color hintColor,
+  ) {
     return Column(
       children: [
         TextFormField(
@@ -938,7 +975,10 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
             hintText: "01XXXXXXXXX",
             labelStyle: TextStyle(color: hintColor),
             hintStyle: TextStyle(color: hintColor),
-            prefixIcon: Icon(Icons.phone, color: _paymentMethods[_selectedMethod]!['color']),
+            prefixIcon: Icon(
+              Icons.phone,
+              color: _paymentMethods[_selectedMethod]!['color'],
+            ),
             filled: true,
             fillColor: cardColor,
             border: OutlineInputBorder(
@@ -970,7 +1010,10 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
             hintText: "8N7X6W5V...",
             labelStyle: TextStyle(color: hintColor),
             hintStyle: TextStyle(color: hintColor),
-            prefixIcon: const Icon(Icons.receipt_long, color: AppColors.brandMain),
+            prefixIcon: const Icon(
+              Icons.receipt_long,
+              color: AppColors.brandMain,
+            ),
             filled: true,
             fillColor: cardColor,
             border: OutlineInputBorder(
@@ -994,7 +1037,8 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
   }
 
   Widget _buildSubmitButton() {
-    final isExpired = _remainingTime.isNegative || _remainingTime == Duration.zero;
+    final isExpired =
+        _remainingTime.isNegative || _remainingTime == Duration.zero;
 
     return SizedBox(
       width: double.infinity,
@@ -1003,34 +1047,36 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
         onPressed: (isExpired || _isSubmitting) ? null : _submitRequest,
         style: ElevatedButton.styleFrom(
           backgroundColor: isExpired ? Colors.grey : AppColors.brandMain,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
           elevation: 2,
           disabledBackgroundColor: Colors.grey,
         ),
         child: _isSubmitting
             ? const SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(
-            color: Colors.white,
-            strokeWidth: 2,
-          ),
-        )
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
             : Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.send_rounded, size: 20),
-            const SizedBox(width: 10),
-            Text(
-              isExpired ? "SESSION EXPIRED" : "SUBMIT PAYMENT INFO",
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.send_rounded, size: 20),
+                  const SizedBox(width: 10),
+                  Text(
+                    isExpired ? "SESSION EXPIRED" : "SUBMIT PAYMENT INFO",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1063,7 +1109,6 @@ class _ManualPaymentScreenState extends State<ManualPaymentScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _helpButton(Icons.chat, "Chat", () {}),
               _helpButton(Icons.call, "Call", () {}),
               _helpButton(Icons.email, "Email", () {}),
             ],

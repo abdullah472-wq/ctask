@@ -25,7 +25,8 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
     _PolicySection(
       title: "Information We Collect",
       icon: Icons.folder_outlined,
-      content: """We collect the following types of information to operate and improve our service:
+      content:
+          """We collect the following types of information to operate and improve our service:
 
 • Account Information: Name, phone number, email (optional), profile photo, role (Job Maker / Job Finder), language preference.
 
@@ -33,7 +34,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
 
 • Location Data: Approximate or precise location (with your permission) to show nearby jobs and workers.
 
-• Usage Data: App pages visited, actions taken (search, chat, hire, wallet usage), device information (model, OS version), IP address and anonymized analytics.
+• Usage Data: App pages visited, actions taken (search, hire, wallet usage), device information (model, OS version), IP address and anonymized analytics.
 
 • Communication Data: Messages and call details (only meta information such as time and participant, not call recording) between workers and supporters inside the app.
 
@@ -61,7 +62,8 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
     _PolicySection(
       title: "Sharing of Information",
       icon: Icons.share_outlined,
-      content: """We do not sell your personal information to third parties. We may share limited information in the following cases:
+      content:
+          """We do not sell your personal information to third parties. We may share limited information in the following cases:
 
 • With Other Users: When you apply for or post a job, basic profile information (name, photo, rating, location area, work details) is visible to relevant workers or supporters.
 
@@ -74,25 +76,28 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
     _PolicySection(
       title: "Location Data",
       icon: Icons.location_on_outlined,
-      content: """Location services are used to show nearby jobs and workers, and to improve search relevance.
+      content:
+          """Location services are used to show nearby jobs and workers, and to improve search relevance.
 
 • You can control location access from your device settings.
 
-• If you turn off location, some features (e.g. map view, nearby search) may not work correctly.
+• If you turn off location, some location-based features may not work correctly.
 
 • We do not continuously track your background location without your permission.""",
     ),
     _PolicySection(
       title: "Cookies & Analytics",
       icon: Icons.cookie_outlined,
-      content: """We may use in-app analytics and similar technologies to understand how users interact with the app.
+      content:
+          """We may use in-app analytics and similar technologies to understand how users interact with the app.
 
 This helps us improve features, fix bugs and optimize performance. We do not use these tools to personally identify you without your consent.""",
     ),
     _PolicySection(
       title: "Data Retention",
       icon: Icons.storage_outlined,
-      content: """• We keep your account and profile data as long as your account is active.
+      content:
+          """• We keep your account and profile data as long as your account is active.
 
 • Transaction and legal records may be kept for a longer period as required by law or for dispute resolution.
 
@@ -101,7 +106,8 @@ This helps us improve features, fix bugs and optimize performance. We do not use
     _PolicySection(
       title: "Security",
       icon: Icons.security_outlined,
-      content: """We use reasonable technical and organizational measures to protect your information:
+      content:
+          """We use reasonable technical and organizational measures to protect your information:
 
 • Encryption where possible
 • Secure storage
@@ -132,7 +138,8 @@ We do not knowingly collect personal information from children under 13. If you 
     _PolicySection(
       title: "Third-Party Links & Services",
       icon: Icons.link_outlined,
-      content: """Our app may contain links or integrations to third-party websites or services (e.g. payment providers, map services).
+      content:
+          """Our app may contain links or integrations to third-party websites or services (e.g. payment providers, map services).
 
 We are not responsible for the privacy practices of those third parties. Please review their privacy policies separately.""",
     ),
@@ -148,7 +155,8 @@ By continuing to use FINDUS after changes, you agree to the updated Policy.""",
     _PolicySection(
       title: "Contact Us",
       icon: Icons.mail_outlined,
-      content: """If you have any questions or concerns about this Privacy Policy or how we handle your data, you can contact us at:
+      content:
+          """If you have any questions or concerns about this Privacy Policy or how we handle your data, you can contact us at:
 
 📧 Email: admin@findus.odditybd.shop
 📝 Subject: Privacy Policy – FINDUS
@@ -205,8 +213,12 @@ We typically respond within 48 hours.""",
   }
 
   void _copyToClipboard() {
-    final fullText = _sections.map((s) => "${s.title}\n\n${s.content}").join("\n\n---\n\n");
-    Clipboard.setData(ClipboardData(text: "FINDUS Privacy Policy\n\n$fullText"));
+    final fullText = _sections
+        .map((s) => "${s.title}\n\n${s.content}")
+        .join("\n\n---\n\n");
+    Clipboard.setData(
+      ClipboardData(text: "FINDUS Privacy Policy\n\n$fullText"),
+    );
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -225,7 +237,9 @@ We typically respond within 48 hours.""",
   }
 
   void _sharePolicy() {
-    final fullText = _sections.map((s) => "${s.title}\n\n${s.content}").join("\n\n---\n\n");
+    final fullText = _sections
+        .map((s) => "${s.title}\n\n${s.content}")
+        .join("\n\n---\n\n");
     Share.share(
       "FINDUS Privacy Policy\n\nLast updated: January 2025\n\n$fullText",
       subject: "FINDUS Privacy Policy",
@@ -294,29 +308,20 @@ We typically respond within 48 hours.""",
                 physics: const BouncingScrollPhysics(),
                 slivers: [
                   // Header
-                  SliverToBoxAdapter(
-                    child: _buildHeader(colors),
-                  ),
+                  SliverToBoxAdapter(child: _buildHeader(colors)),
 
                   // Quick Stats
-                  SliverToBoxAdapter(
-                    child: _buildQuickStats(colors),
-                  ),
+                  SliverToBoxAdapter(child: _buildQuickStats(colors)),
 
                   // Sections
                   SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                        return _buildSection(index, colors);
-                      },
-                      childCount: _sections.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      return _buildSection(index, colors);
+                    }, childCount: _sections.length),
                   ),
 
                   // Footer
-                  SliverToBoxAdapter(
-                    child: _buildFooter(colors),
-                  ),
+                  SliverToBoxAdapter(child: _buildFooter(colors)),
                 ],
               ),
 
@@ -342,10 +347,7 @@ We typically respond within 48 hours.""",
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.brandMain,
-            AppColors.brandMain.withOpacity(0.8),
-          ],
+          colors: [AppColors.brandMain, AppColors.brandMain.withOpacity(0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -415,10 +417,7 @@ We typically respond within 48 hours.""",
                 SizedBox(width: 6),
                 Text(
                   "Last updated: January 2025",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 12),
                 ),
               ],
             ),
@@ -465,9 +464,7 @@ We typically respond within 48 hours.""",
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: highlight
-            ? Colors.green.withOpacity(0.1)
-            : colors.cardColor,
+        color: highlight ? Colors.green.withOpacity(0.1) : colors.cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: highlight
@@ -558,11 +555,7 @@ We typically respond within 48 hours.""",
                   ),
                 ),
                 const SizedBox(width: 12),
-                Icon(
-                  section.icon,
-                  color: AppColors.brandMain,
-                  size: 20,
-                ),
+                Icon(section.icon, color: AppColors.brandMain, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -607,11 +600,7 @@ We typically respond within 48 hours.""",
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.verified_user,
-            color: colors.subTextColor,
-            size: 40,
-          ),
+          Icon(Icons.verified_user, color: colors.subTextColor, size: 40),
           const SizedBox(height: 12),
           Text(
             "Your Privacy Matters",
@@ -663,10 +652,7 @@ We typically respond within 48 hours.""",
           const SizedBox(height: 20),
           Text(
             "© 2025 FINDUS. All rights reserved.",
-            style: TextStyle(
-              fontSize: 11,
-              color: colors.subTextColor,
-            ),
+            style: TextStyle(fontSize: 11, color: colors.subTextColor),
           ),
         ],
       ),
@@ -710,10 +696,7 @@ We typically respond within 48 hours.""",
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.list,
-                            color: AppColors.brandMain,
-                          ),
+                          const Icon(Icons.list, color: AppColors.brandMain),
                           const SizedBox(width: 10),
                           Text(
                             "Table of Contents",
@@ -724,10 +707,7 @@ We typically respond within 48 hours.""",
                           ),
                           const Spacer(),
                           IconButton(
-                            icon: Icon(
-                              Icons.close,
-                              color: colors.subTextColor,
-                            ),
+                            icon: Icon(Icons.close, color: colors.subTextColor),
                             onPressed: () => setState(() => _showTOC = false),
                           ),
                         ],
@@ -773,8 +753,9 @@ We typically respond within 48 hours.""",
                               section.title,
                               style: TextStyle(
                                 fontSize: 14,
-                                fontWeight:
-                                isActive ? FontWeight.bold : FontWeight.normal,
+                                fontWeight: isActive
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                                 color: isActive
                                     ? AppColors.brandMain
                                     : colors.textColor,
@@ -806,10 +787,7 @@ We typically respond within 48 hours.""",
           color: colors.cardColor.withOpacity(0.9),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-            ),
+            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8),
           ],
         ),
         child: Column(
@@ -860,7 +838,8 @@ class _PolicyColors {
   }
 
   Color get textColor => isDark ? Colors.white : Colors.black87;
-  Color get subTextColor => isDark ? Colors.grey.shade400 : Colors.grey.shade600;
+  Color get subTextColor =>
+      isDark ? Colors.grey.shade400 : Colors.grey.shade600;
 }
 
 class _PolicySection {

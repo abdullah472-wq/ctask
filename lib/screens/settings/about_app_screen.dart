@@ -91,7 +91,7 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
                         icon: Icons.info_outline,
                         title: "About FINDUS",
                         content:
-                        "FINDUS is a hyper-local service marketplace that connects Job Makers (supporters) and Job Finders (workers/earners) with trust, transparency and speed in Bangladesh.",
+                            "FINDUS is a hyper-local service marketplace that connects Job Makers (supporters) and Job Finders (workers/earners) with trust, transparency and speed in Bangladesh.",
                         colors: colors,
                         accentColor: Colors.blue,
                       ),
@@ -103,7 +103,7 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
                         icon: Icons.lightbulb_outline,
                         title: "Core Idea",
                         content:
-                        "FINDUS helps people quickly find nearby workers like farmers, rickshaw pullers, cleaners, electricians, painters or computer experts, and helps workers get more jobs digitally instead of waiting on streets or corners.",
+                            "FINDUS helps people quickly find nearby workers like farmers, rickshaw pullers, cleaners, electricians, painters or computer experts, and helps workers get more jobs digitally instead of waiting on streets or corners.",
                         colors: colors,
                         accentColor: Colors.amber.shade700,
                       ),
@@ -125,7 +125,7 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
                         icon: Icons.code,
                         title: "Technology",
                         content:
-                        "FINDUS is built with Flutter so that the same codebase can run smoothly on both Android and iOS, with a fast and modern user experience.",
+                            "FINDUS is built with Flutter so that the same codebase can run smoothly on both Android and iOS, with a fast and modern user experience.",
                         colors: colors,
                         accentColor: Colors.purple,
                       ),
@@ -173,10 +173,7 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.brandMain,
-            AppColors.brandMain.withOpacity(0.8),
-          ],
+          colors: [AppColors.brandMain, AppColors.brandMain.withOpacity(0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -339,21 +336,14 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
       _Feature(
         icon: Icons.swap_horiz,
         title: "Dual Role",
-        description:
-        "Switch between Job Maker and Job Finder in one account",
+        description: "Switch between Job Maker and Job Finder in one account",
         color: Colors.green,
-      ),
-      _Feature(
-        icon: Icons.map_outlined,
-        title: "Map Based Search",
-        description: "See nearby workers on a live map and hire faster",
-        color: Colors.blue,
       ),
       _Feature(
         icon: Icons.verified_user_outlined,
         title: "Clear Profiles",
         description:
-        "Photo, skills, pricing, completed jobs, ratings and badges",
+            "Photo, skills, pricing, completed jobs, ratings and badges",
         color: Colors.orange,
       ),
       _Feature(
@@ -384,7 +374,11 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
                   color: Colors.teal.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.star_outline, color: Colors.teal, size: 24),
+                child: const Icon(
+                  Icons.star_outline,
+                  color: Colors.teal,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -470,7 +464,11 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
                   color: Colors.indigo.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.shield_outlined, color: Colors.indigo, size: 24),
+                child: const Icon(
+                  Icons.shield_outlined,
+                  color: Colors.indigo,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -556,11 +554,7 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.flag_outlined,
-                color: AppColors.brandMain,
-                size: 24,
-              ),
+              Icon(Icons.flag_outlined, color: AppColors.brandMain, size: 24),
               const SizedBox(width: 12),
               Text(
                 "Our Mission",
@@ -651,7 +645,9 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
             color: colors.cardColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: colors.isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+              color: colors.isDark
+                  ? Colors.grey.shade800
+                  : Colors.grey.shade300,
             ),
           ),
           child: Column(
@@ -660,10 +656,7 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
               const SizedBox(height: 4),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colors.subTextColor,
-                ),
+                style: TextStyle(fontSize: 12, color: colors.subTextColor),
               ),
             ],
           ),
@@ -720,17 +713,10 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colors.textColor,
-                ),
+                style: TextStyle(fontSize: 14, color: colors.textColor),
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: colors.subTextColor,
-              size: 16,
-            ),
+            Icon(Icons.arrow_forward_ios, color: colors.subTextColor, size: 16),
           ],
         ),
       ),
@@ -753,10 +739,7 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
           const SizedBox(height: 8),
           Text(
             "© 2026 FINDUS. All rights reserved.",
-            style: TextStyle(
-              color: colors.subTextColor,
-              fontSize: 11,
-            ),
+            style: TextStyle(color: colors.subTextColor, fontSize: 11),
           ),
         ],
       ),

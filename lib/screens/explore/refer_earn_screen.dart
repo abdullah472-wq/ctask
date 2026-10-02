@@ -60,9 +60,10 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
       duration: const Duration(milliseconds: 800),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOut),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.1),
@@ -114,7 +115,8 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
         _joined = _parseToInt(data['referralJoinedCount']);
         _totalRewards = _parseToInt(data['referralTotalRewards']);
         _pendingRewards = _parseToInt(data['referralPendingRewards']);
-        _hasReferrer = data['referredBy'] != null &&
+        _hasReferrer =
+            data['referredBy'] != null &&
             data['referredBy'].toString().isNotEmpty;
         _isLoading = false;
       });
@@ -141,8 +143,11 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
     return "FD${short.toUpperCase()}";
   }
 
-  void _showSnackBar(String message,
-      {bool isError = false, bool isSuccess = false}) {
+  void _showSnackBar(
+    String message, {
+    bool isError = false,
+    bool isSuccess = false,
+  }) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -152,16 +157,17 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
               isError
                   ? Icons.error_outline
                   : (isSuccess
-                  ? Icons.check_circle_outline
-                  : Icons.info_outline),
+                        ? Icons.check_circle_outline
+                        : Icons.info_outline),
               color: Colors.white,
             ),
             const SizedBox(width: 12),
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor:
-        isError ? Colors.red.shade600 : (isSuccess ? Colors.green.shade600 : AppColors.brandMain),
+        backgroundColor: isError
+            ? Colors.red.shade600
+            : (isSuccess ? Colors.green.shade600 : AppColors.brandMain),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),
@@ -294,7 +300,9 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
             Icon(
               isError
                   ? Icons.warning_rounded
-                  : (isSuccess ? Icons.check_circle_rounded : Icons.info_rounded),
+                  : (isSuccess
+                        ? Icons.check_circle_rounded
+                        : Icons.info_rounded),
               color: isError
                   ? Colors.red
                   : (isSuccess ? Colors.green : AppColors.brandMain),
@@ -311,9 +319,7 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
         ),
         content: Text(
           message,
-          style: TextStyle(
-            color: isDark ? Colors.white70 : Colors.black54,
-          ),
+          style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
         ),
         actions: [
           TextButton(
@@ -467,11 +473,11 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
             Text(
               _error == "not_logged_in"
                   ? (isBengali
-                  ? "রেফারেল বিবরণ দেখতে লগইন করুন।"
-                  : "Please log in to see referral details.")
+                        ? "রেফারেল বিবরণ দেখতে লগইন করুন।"
+                        : "Please log in to see referral details.")
                   : (isBengali
-                  ? "রেফারেল ডেটা লোড করতে ব্যর্থ।"
-                  : "Failed to load referral data."),
+                        ? "রেফারেল ডেটা লোড করতে ব্যর্থ।"
+                        : "Failed to load referral data."),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isDark ? Colors.white70 : Colors.black54,
@@ -503,10 +509,7 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.brandMain,
-            AppColors.brandDark,
-          ],
+          colors: [AppColors.brandMain, AppColors.brandDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -630,8 +633,7 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
                       vertical: 14,
                     ),
                     filled: true,
-                    fillColor:
-                    isDark ? Colors.black26 : Colors.grey.shade100,
+                    fillColor: isDark ? Colors.black26 : Colors.grey.shade100,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -658,17 +660,17 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
                   ),
                   child: _isApplyingCode
                       ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
                       : Text(
-                    isBengali ? "প্রয়োগ" : "APPLY",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                          isBengali ? "প্রয়োগ" : "APPLY",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
             ],
@@ -701,7 +703,11 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.analytics_rounded, color: AppColors.brandMain, size: 20),
+              Icon(
+                Icons.analytics_rounded,
+                color: AppColors.brandMain,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 isBengali ? "আপনার রেফারেল পরিসংখ্যান" : "Your Referral Stats",
@@ -758,8 +764,9 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
             width: double.infinity,
             height: 50,
             child: ElevatedButton.icon(
-              onPressed:
-              _isRequestingPayout || !canWithdraw ? null : _requestPayout,
+              onPressed: _isRequestingPayout || !canWithdraw
+                  ? null
+                  : _requestPayout,
               style: ElevatedButton.styleFrom(
                 backgroundColor: canWithdraw ? Colors.green : Colors.grey,
                 foregroundColor: Colors.white,
@@ -771,13 +778,13 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
               ),
               icon: _isRequestingPayout
                   ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
                   : const Icon(Icons.payments_rounded),
               label: Text(
                 isBengali ? "পেআউট অনুরোধ" : "REQUEST PAYOUT",
@@ -899,9 +906,7 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
                     : [AppColors.brandLight, AppColors.bgBlue],
               ),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: AppColors.brandMain.withOpacity(0.3),
-              ),
+              border: Border.all(color: AppColors.brandMain.withOpacity(0.3)),
             ),
             child: Row(
               children: [
@@ -920,11 +925,11 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
                   onPressed: _referralCode.isEmpty
                       ? null
                       : () => _copyText(
-                    _referralCode,
-                    isBengali
-                        ? "রেফারেল কোড কপি হয়েছে"
-                        : "Referral code copied",
-                  ),
+                          _referralCode,
+                          isBengali
+                              ? "রেফারেল কোড কপি হয়েছে"
+                              : "Referral code copied",
+                        ),
                   icon: const Icon(Icons.copy_rounded),
                   color: AppColors.brandMain,
                   tooltip: isBengali ? "কপি করুন" : "Copy code",
@@ -953,13 +958,19 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
             ),
             child: Row(
               children: [
-                const Icon(Icons.link_rounded, size: 18, color: AppColors.brandMain),
+                const Icon(
+                  Icons.link_rounded,
+                  size: 18,
+                  color: AppColors.brandMain,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     _referralLink.isNotEmpty
                         ? _referralLink
-                        : (isBengali ? "লিংক এখানে দেখাবে" : "Link will appear here"),
+                        : (isBengali
+                              ? "লিংক এখানে দেখাবে"
+                              : "Link will appear here"),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -972,9 +983,9 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
                   onPressed: _referralLink.isEmpty
                       ? null
                       : () => _copyText(
-                    _referralLink,
-                    isBengali ? "লিংক কপি হয়েছে" : "Link copied",
-                  ),
+                          _referralLink,
+                          isBengali ? "লিংক কপি হয়েছে" : "Link copied",
+                        ),
                   child: Text(
                     isBengali ? "কপি" : "COPY",
                     style: const TextStyle(
@@ -1017,7 +1028,7 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildShareButton(
-              icon: Icons.chat_rounded,
+              icon: Icons.share_rounded,
               label: "WhatsApp",
               color: Colors.green,
               onTap: () => _shareReferral("WhatsApp"),
@@ -1166,7 +1177,11 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
                 },
                 errorBuilder: (context, error, stackTrace) {
                   return const Center(
-                    child: Icon(Icons.qr_code_rounded, size: 80, color: Colors.grey),
+                    child: Icon(
+                      Icons.qr_code_rounded,
+                      size: 80,
+                      color: Colors.grey,
+                    ),
                   );
                 },
               ),
@@ -1184,15 +1199,15 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
 
     final steps = isBengali
         ? [
-      "আপনার রেফারেল লিংক বা QR কোড বন্ধুদের সাথে শেয়ার করুন।",
-      "তারা আপনার লিংক বা কোড ব্যবহার করে সাইন আপ করবে।",
-      "তাদের প্রথম কাজ সম্পন্ন হলে, আপনি ৳5 পাবেন!",
-    ]
+            "আপনার রেফারেল লিংক বা QR কোড বন্ধুদের সাথে শেয়ার করুন।",
+            "তারা আপনার লিংক বা কোড ব্যবহার করে সাইন আপ করবে।",
+            "তাদের প্রথম কাজ সম্পন্ন হলে, আপনি ৳5 পাবেন!",
+          ]
         : [
-      "Share your referral link or QR code with friends.",
-      "They sign up using your link or code.",
-      "When they complete their first job, you get ৳5 reward!",
-    ];
+            "Share your referral link or QR code with friends.",
+            "They sign up using your link or code.",
+            "When they complete their first job, you get ৳5 reward!",
+          ];
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -1212,7 +1227,11 @@ class _ReferEarnScreenState extends State<ReferEarnScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.help_outline_rounded, color: AppColors.brandMain, size: 20),
+              Icon(
+                Icons.help_outline_rounded,
+                color: AppColors.brandMain,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 isBengali ? "এটি কিভাবে কাজ করে" : "How it works",

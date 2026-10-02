@@ -16,27 +16,11 @@ class AchievementsConfig {
       resetPeriod: ResetPeriod.daily,
     ),
     const AchievementDef(
-      id: 'daily_message',
-      title: 'Conversation Starter',
-      description: 'Send a message or reply',
-      target: 1,
-      xpReward: 60,
-      resetPeriod: ResetPeriod.daily,
-    ),
-    const AchievementDef(
       id: 'daily_view_jobs',
       title: 'Window Shopper',
       description: 'View details of 3 jobs',
       target: 3,
       xpReward: 70,
-      resetPeriod: ResetPeriod.daily,
-    ),
-    const AchievementDef(
-      id: 'daily_explore',
-      title: 'Map Explorer',
-      description: 'Browse the map for 1 minute',
-      target: 1,
-      xpReward: 50,
       resetPeriod: ResetPeriod.daily,
     ),
     const AchievementDef(
@@ -247,35 +231,6 @@ class AchievementsConfig {
       xpReward: 10000,
     ),
 
-    // ✅ Chat Chain (Everyone)
-    const AchievementDef(
-      id: 'lt_chat_s1',
-      chainKey: 'lt_chat',
-      chainStage: 1,
-      title: 'Hello World',
-      description: 'Start 100 conversations',
-      target: 100,
-      xpReward: 1500,
-    ),
-    const AchievementDef(
-      id: 'lt_chat_s2',
-      chainKey: 'lt_chat',
-      chainStage: 2,
-      title: 'Networker',
-      description: 'Start 1000 conversations',
-      target: 1000,
-      xpReward: 10000,
-    ),
-    const AchievementDef(
-      id: 'lt_chat_s3',
-      chainKey: 'lt_chat',
-      chainStage: 3,
-      title: 'Communication Hub',
-      description: 'Start 5000 conversations',
-      target: 5000,
-      xpReward: 50000,
-    ),
-
     // ✅ Application Chain (Worker Only)
     const AchievementDef(
       id: 'lt_apply_s1',
@@ -462,15 +417,17 @@ class AchievementsConfig {
 
   // ✅ Get chain quests
   static List<AchievementDef> getChainQuests(String chainKey) {
-    return all
-        .where((a) => a.chainKey == chainKey)
-        .toList()
+    return all.where((a) => a.chainKey == chainKey).toList()
       ..sort((a, b) => a.chainStage.compareTo(b.chainStage));
   }
 
   // ✅ Get all chain keys
   static List<String> get allChainKeys {
-    return all.where((a) => a.chainKey != null).map((a) => a.chainKey!).toSet().toList();
+    return all
+        .where((a) => a.chainKey != null)
+        .map((a) => a.chainKey!)
+        .toSet()
+        .toList();
   }
 
   // ✅ Statistics

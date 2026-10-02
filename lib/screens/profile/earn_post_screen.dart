@@ -32,9 +32,6 @@ class _EarnPostScreenState extends State<EarnPostScreen> {
   final List<XFile> _mediaFiles = [];
 
   bool _isSaving = false;
-  bool _useCurrentLocation = true;
-  String _locationName = "Detecting location...";
-  LatLng? _selectedLatLng;
   double _expectedCharge = 800.0;
 
   final List<Map<String, dynamic>> _categories = const [
@@ -62,131 +59,8 @@ class _EarnPostScreenState extends State<EarnPostScreen> {
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // 📍 LOCATION HANDLING
+  // 📍 LOCATION HANDLING (REMOVED)
   // ════════════════════════════════════════════════════════════════════════════
-
-  Future<void> _initLocation() async {
-    if (!_useCurrentLocation) return;
-    await _determineInitialPosition();
-  }
-
-  /// ✅ Check location permission & service
-  Future<bool> _ensureLocationReady() async {
-    if (!_useCurrentLocation && _selectedLatLng != null) return true;
-
-    bool enabled = await Geolocator.isLocationServiceEnabled();
-    if (!enabled) {
-      if (mounted) {
-        _showSnack("Please enable location services", Colors.orange);
-      }
-      return false;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      if (mounted) {
-        _showSnack("Location permission permanently denied", Colors.redAccent);
-      }
-      return false;
-    }
-
-    return permission != LocationPermission.denied;
-  }
-
-  /// ✅ Get current position with timeout
-  Future<void> _determineInitialPosition() async {
-    try {
-      final ok = await _ensureLocationReady();
-      if (!ok) {
-        if (mounted) setState(() => _locationName = "Location not available");
-        return;
-      }
-
-      // ✅ Add timeout to prevent infinite loading
-      final p = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw Exception("Location timeout");
-        },
-      );
-
-      final latLng = LatLng(p.latitude, p.longitude);
-
-      if (mounted) {
-        setState(() {
-          _selectedLatLng = latLng;
-          _locationName = "Getting address...";
-        });
-      }
-      await _updateLocationNameFromLatLng(latLng);
-    } catch (e) {
-      debugPrint("❌ Location error: $e");
-      if (mounted) {
-        setState(() => _locationName = "Location not found");
-        _showSnack("Could not get location: ${e.toString()}", Colors.orange);
-      }
-    }
-  }
-
-  /// ✅ Select location from map
-  Future<void> _selectLocationOnMap() async {
-    final picked = await Navigator.push<LatLng>(
-      context,
-      MaterialPageRoute(builder: (_) => const LocationPickerScreen()),
-    );
-
-    if (mounted && picked != null) {
-      setState(() {
-        _selectedLatLng = picked;
-        _useCurrentLocation = false;
-        _locationName = "Getting address...";
-      });
-      await _updateLocationNameFromLatLng(picked);
-    }
-  }
-
-  /// ✅ Convert LatLng to readable address
-  Future<void> _updateLocationNameFromLatLng(LatLng latLng) async {
-    try {
-      final placemarks = await geo.placemarkFromCoordinates(
-        latLng.latitude,
-        latLng.longitude,
-      ).timeout(
-        const Duration(seconds: 5),
-        onTimeout: () => throw Exception("Geocoding timeout"),
-      );
-
-      if (!mounted) return;
-
-      if (placemarks.isEmpty) {
-        setState(() => _locationName = "Selected Location");
-        return;
-      }
-
-      final place = placemarks.first;
-      final parts = <String>[];
-
-      if ((place.street ?? '').isNotEmpty) parts.add(place.street!);
-      if ((place.subLocality ?? '').isNotEmpty) parts.add(place.subLocality!);
-      if ((place.locality ?? '').isNotEmpty) parts.add(place.locality!);
-      if ((place.administrativeArea ?? '').isNotEmpty) parts.add(place.administrativeArea!);
-
-      final addressStr = parts.join(', ');
-      setState(() {
-        _locationName = addressStr.isNotEmpty ? addressStr : "Selected Location";
-      });
-    } catch (e) {
-      debugPrint("❌ Geocoding error: $e");
-      if (!mounted) return;
-      setState(() => _locationName = "Selected Location");
-    }
-  }
 
   // ════════════════════════════════════════════════════════════════════════════
   // 📸 MEDIA HANDLING
@@ -427,11 +301,6 @@ class _EarnPostScreenState extends State<EarnPostScreen> {
       return;
     }
 
-    if (_selectedLatLng == null) {
-      _showSnack("Please pick a location", Colors.redAccent);
-      return;
-    }
-
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       _showSnack("You must be logged in to post", Colors.redAccent);
@@ -470,13 +339,6 @@ class _EarnPostScreenState extends State<EarnPostScreen> {
       // ✅ Upload media
       final uploadedUrls = await _uploadMedia();
 
-      // ✅ Create location keys for search
-      final locationKeys = _locationName
-          .toLowerCase()
-          .split(RegExp(r'[^a-z0-9]+'))
-          .where((s) => s.isNotEmpty)
-          .toList();
-
       // ✅ Create post
       await PostService.createPost(
         ownerId: user.uid,
@@ -487,10 +349,10 @@ class _EarnPostScreenState extends State<EarnPostScreen> {
             : _descController.text.trim(),
         roleLabel: _selectedCategory.toUpperCase(),
         roleKey: _selectedCategory.toLowerCase().replaceAll(' ', '_'),
-        lat: _selectedLatLng!.latitude,
-        lng: _selectedLatLng!.longitude,
-        address: _locationName,
-        locationKeys: locationKeys,
+        lat: 0.0,
+        lng: 0.0,
+        address: "Global",
+        locationKeys: ["global"],
         price: _expectedCharge,
         priceLabel: '৳ ${_expectedCharge.toInt()} / day',
         images: uploadedUrls,
@@ -677,64 +539,6 @@ class _EarnPostScreenState extends State<EarnPostScreen> {
               textColor,
               hintColor,
               maxLines: 4,
-            ),
-
-            const SizedBox(height: 20),
-
-            // Location
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _useCurrentLocation,
-                        activeColor: AppColors.brandMain,
-                        onChanged: (v) async {
-                          setState(() => _useCurrentLocation = v ?? true);
-                          if (v == true) await _determineInitialPosition();
-                        },
-                      ),
-                      Expanded(
-                        child: Text(
-                          "Use current location",
-                          style: TextStyle(color: textColor),
-                        ),
-                      ),
-                      TextButton.icon(
-                        onPressed: _selectLocationOnMap,
-                        icon: const Icon(Icons.map, size: 18),
-                        label: const Text("Pick on Map"),
-                      ),
-                    ],
-                  ),
-                  if (_locationName.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 12, bottom: 8),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.location_on,
-                            size: 16,
-                            color: hintColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              _locationName,
-                              style: TextStyle(fontSize: 12, color: hintColor),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
             ),
 
             const SizedBox(height: 20),

@@ -7,8 +7,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:findus_app/services/firestore_chat_service.dart';
-import 'package:findus_app/screens/tabs/chat_screen.dart';
 import 'package:findus_app/screens/report/report_screen.dart';
 import 'package:findus_app/achievement/achievement_service.dart';
 import 'unified_profile_utils.dart';
@@ -25,40 +23,17 @@ mixin UnifiedProfileActions<T extends StatefulWidget> on State<T> {
         return;
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to open link')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Unable to open link')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Link error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Link error: $e')));
       }
     }
-  }
-
-  Future<void> openChat(String roleLabel) async {
-    final cid = await FirestoreChatService.getOrCreateConversation(
-      otherUserId: profileUid,
-    );
-    if (!mounted) return;
-
-    // Track chat initiation
-    await AchievementService.incrementProgress('lt_chat_s1', amount: 1);
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ChatScreen(
-          conversationId: cid,
-          userName: UnifiedProfileUtils.safeString(userData['name']),
-          userRole: roleLabel,
-          userImage: UnifiedProfileUtils.safeString(userData['image'], defaultValue: ''),
-          otherUserId: profileUid,
-        ),
-      ),
-    );
   }
 
   Future<void> makePhoneCall() async {
@@ -70,9 +45,9 @@ mixin UnifiedProfileActions<T extends StatefulWidget> on State<T> {
       await launchUrl(uri);
       await AchievementService.incrementProgress('daily_contact', amount: 1);
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Phone call not supported')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Phone call not supported')));
     }
   }
 
@@ -85,9 +60,9 @@ mixin UnifiedProfileActions<T extends StatefulWidget> on State<T> {
       await launchUrl(uri);
       await AchievementService.incrementProgress('daily_contact', amount: 1);
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email not supported')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Email not supported')));
     }
   }
 
@@ -121,7 +96,9 @@ mixin UnifiedProfileActions<T extends StatefulWidget> on State<T> {
       final message = 'FindUs Profile: $userName\n$profileLink';
 
       final box = context.findRenderObject() as RenderBox?;
-      final origin = box != null ? box.localToGlobal(Offset.zero) & box.size : null;
+      final origin = box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
 
       await Share.share(message, sharePositionOrigin: origin);
 
@@ -134,9 +111,9 @@ mixin UnifiedProfileActions<T extends StatefulWidget> on State<T> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Share failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Share failed: $e')));
       }
     }
   }
@@ -148,15 +125,15 @@ mixin UnifiedProfileActions<T extends StatefulWidget> on State<T> {
       await AchievementService.incrementProgress('daily_share', amount: 1);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile link copied!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Profile link copied!')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Copy failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Copy failed: $e')));
       }
     }
   }
