@@ -1,6 +1,6 @@
-# olpokaj
+# ctask
 
-Your micro-job marketplace.
+complete task & earn.
 
 ## Getting Started
 
